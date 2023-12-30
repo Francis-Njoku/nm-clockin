@@ -182,6 +182,74 @@ class UserController extends Controller
     }
 
     /**
+     * @param VerifyPin
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'token' => ['required'],
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse(['success' => false, 'message' => $validator->errors()], 422);
+        }
+
+        $check = DB::table('password_resets')->where([
+            ['email', $request->all()['email']],
+            ['token', $request->all()['token']],
+        ]);
+
+        if ($check->exists()) {
+            $difference = Carbon::now()->diffInSeconds($check->first()->created_at);
+            if ($difference > 3600) {
+                return new JsonResponse(['success' => false, 'message' => "Token Expired"], 400);
+            }
+            $delete = DB::table('password_resets')->where([
+                ['email', $request->all()['email']],
+                ['token', $request->all()['token']],
+            ])->delete();
+
+            $user = User::where('email', $request->email);
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+
+            $token = $user->first()->createToken('myapptoken')->plainTextToken;
+
+            return new JsonResponse(
+                [
+                    'success' => true,
+                    'message' => "Your password has been reset",
+                    'token' => $token
+                ],
+                200
+            );
+
+            /*
+            return new JsonResponse(
+                [
+                    'success' => true,
+                    'message' => "You can now reset your password"
+                ],
+                200
+            );*/
+        } else {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => "Invalid token"
+                ],
+                401
+            );
+        }
+    }
+
+
+    /**
      * @param ForgotPasswordRequest $request
      * @return JsonResponse
      * @throws ValidationException
