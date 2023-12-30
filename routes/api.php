@@ -20,6 +20,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/auth/register', [UserController::class, 'createUser']);
+Route::post('/auth/logout', [UserController::class, 'logout']);
+Route::post('/auth/forgot', [UserController::class, 'forgot']);
+Route::post('/auth/reset', [UserController::class, 'reset']);
 Route::post('/auth/login', [UserController::class, 'loginUser'])->name('login');
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
