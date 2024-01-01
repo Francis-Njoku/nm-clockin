@@ -23,7 +23,7 @@ Route::post('/auth/register', [UserController::class, 'createUser']);
 Route::post('/auth/logout', [UserController::class, 'logout']);
 Route::post('/auth/forgot', [UserController::class, 'forgot']);
 Route::post('/auth/reset', [UserController::class, 'reset']);
-Route::post('/auth/login', [UserController::class, 'loginUser'])->name('login');
+Route::match(['get', 'post'], '/auth/login', [UserController::class, 'loginUser'])->name('login');
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
@@ -39,3 +39,12 @@ Route::post('/email/verification-notification', function (Request $request) {
 
     return back()->with('message', 'Verification link sent!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+Route::post(
+    '/forgot-password',
+    [UserController::class, 'forgotPassword']
+);
+Route::post(
+    '/reset-password',
+    [UserController::class, 'resetPassword']
+);
