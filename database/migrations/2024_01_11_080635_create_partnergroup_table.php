@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEventtypeTable extends Migration
+class CreatePartnergroupTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,8 @@ class CreateEventtypeTable extends Migration
      */
     public function up()
     {
-        Schema::create('eventtype', function (Blueprint $table) {
+        Schema::create('partnergroup', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 1000);
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ class CreateEventtypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('eventtype');
+        Schema::dropIfExists('partnergroup');
     }
 }
