@@ -17,4 +17,9 @@ class Event extends Model
     {
         return SlugOptions::create()->generateSlugsFrom('name')->saveSlugsTo('slug');
     }
+
+    public function images()
+    {
+        return $this->hasMany(EventGallery::class);
+    }
 }
