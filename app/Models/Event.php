@@ -11,7 +11,7 @@ class Event extends Model
 {
     use HasFactory, HasSlug;
 
-    protected $fillable = ['name', 'eventTypeId', 'slug', 'location', 'excerpt', 'description', 'start', 'end'];
+    protected $fillable = ['name', 'eventTypeId', 'createdBy', 'slug', 'location', 'excerpt', 'description', 'start', 'end', 'status'];
 
     public function getSlugOptions(): SlugOptions
     {
