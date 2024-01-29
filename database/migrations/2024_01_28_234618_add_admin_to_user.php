@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddCreatedByToEventTable extends Migration
+class AddAdminToUser extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddCreatedByToEventTable extends Migration
      */
     public function up()
     {
-        Schema::table('event', function (Blueprint $table) {
-            $table->foreignIdFor(\App\Models\User::class, 'createdBy')->nullable()->after('slug');
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('isStaff', false)->after('password');
         });
     }
 
@@ -25,8 +25,8 @@ class AddCreatedByToEventTable extends Migration
      */
     public function down()
     {
-        Schema::table('event', function (Blueprint $table) {
-            $table->dropColumn('createdBy');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('isStaff');
         });
     }
 }
