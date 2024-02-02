@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\UserGroup;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +37,9 @@ class UserController extends Controller
                 $request->all(),
                 [
                     'name' => 'required',
+                    'firstName' => '',
+                    'lastName' => '',
+                    'phone' => '',
                     'email' => 'required|email|unique:users,email',
                     'password' => 'required'
                 ]
@@ -51,7 +56,15 @@ class UserController extends Controller
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
+                'firstName' => $request->firstname,
+                'lastName' => $request->lastname,
+                'phone' => $request->phone,
                 'password' => Hash::make($request->password)
+            ]);
+
+            $userGroup = UserGroup::create([
+                'user_id' => $user->id,
+                'group_id' => '1'
             ]);
 
             // Send email to new user
@@ -297,4 +310,20 @@ class UserController extends Controller
         return new JsonResponse(['message' => 'A Code has been Sent to your Email Address.']);
     }
      */
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function listUsers(Request $request)
+    {
+        /*
+        $user = $request->user();
+        if ($user->isAdmin == false) {
+            return abort(403, 'Unauthorized action.');
+        }*/
+        return UserResource::collection(User::paginate(10));
+    }
 }
