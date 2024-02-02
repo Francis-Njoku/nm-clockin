@@ -18,6 +18,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::get('/auth/list-users', [UserController::class, 'listUsers']);
 
 Route::post('/auth/register', [UserController::class, 'createUser']);
 Route::post('/auth/logout', [UserController::class, 'logout']);
