@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 
 class EventResource extends JsonResource
@@ -15,10 +16,11 @@ class EventResource extends JsonResource
      */
     public function toArray($request)
     {
+        $getEventType = DB::table('eventtype')->where('id', '=', $this->eventTypeId)->get();
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'eventTypeId' => $this->eventTypeId,
+            'eventTypeId' => new EventTypeResource($getEventType),
             'createdBy' => $this->createdBy,
             'slug' => $this->slug,
             'status' => !!$this->status,
