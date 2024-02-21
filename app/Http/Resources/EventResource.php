@@ -17,12 +17,15 @@ class EventResource extends JsonResource
     public function toArray($request)
     {
         $getEventType = DB::table('eventtype')->where('id', '=', $this->eventTypeId)->get();
+        $getImage  = DB::table('eventgallery')->where('id', '=', $this->eventTypeId)->get();
+
         return [
             'id' => $this->id,
             'name' => $this->name,
             'eventTypeId' => new EventTypeResource($getEventType),
             'createdBy' => $this->createdBy,
             'slug' => $this->slug,
+            'images' => EventGalleryResource::collection($getImage),
             'status' => !!$this->status,
             'location' => $this->location,
             'excerpt' => $this->excerpt,

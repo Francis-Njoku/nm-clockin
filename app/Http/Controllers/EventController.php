@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\EventTypeRequest;
+use App\Http\Resources\EventTypeResource;
+use App\Models\EventType;
 
 class EventController extends Controller
 {
@@ -59,5 +62,37 @@ class EventController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function storeEventType(EventTypeRequest $request)
+    {
+        $data = $request->validated();
+
+        $eventType = EventType::create($data);
+
+        return new EventTypeResource($eventType);
+    }
+
+    public function listEventType(Request $request)
+    {
+        $perPage = $request->input('per_page', 10); // Number of items per page, default is 10
+        $resources = EventType::paginate($perPage);
+
+        return response()->json([
+            'data' => $resources->items(),
+            'meta' => [
+                'total' => $resources->total(),
+                'per_page' => $resources->perPage(),
+                'current_page' => $resources->currentPage(),
+                // Add more meta information if needed
+            ],
+        ]);
+        //return EventTypeResource::collection(EventType);
     }
 }
