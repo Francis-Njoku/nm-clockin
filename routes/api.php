@@ -53,3 +53,4 @@ Route::post(
 
 Route::get('/event/list-types', [EventController::class, 'listEventType']);
 Route::post('/event/create-type', [EventController::class, 'storeEventType']);
+Route::patch('/event/type/{id}', [EventController::class, 'updateEventType']);

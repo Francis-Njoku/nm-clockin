@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\EventTypeRequest;
 use App\Http\Resources\EventTypeResource;
+use App\Http\Resources\UpdateEventTypeResource;
 use App\Models\EventType;
 
 class EventController extends Controller
@@ -95,5 +96,27 @@ class EventController extends Controller
             ],
         ]);
         //return EventTypeResource::collection(EventType);
+    }
+
+    /**
+     * Update event type.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateEventType(EventTypeRequest $request, $id)
+    {
+        $data = $request->validated();
+
+        // update survey in the database
+        $find = EventType::find($id);
+        $updated = $find->update($data);
+        //$updated = $eventType->update($data);
+        return response()->json([
+            'message' => 'Event type has been Updated',
+        ]);
+
+
+        //return new UpdateEventTypeResource($updated);
     }
 }
