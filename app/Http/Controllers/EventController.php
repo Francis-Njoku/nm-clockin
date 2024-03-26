@@ -73,6 +73,7 @@ class EventController extends Controller
     public function storeEventType(EventTypeRequest $request)
     {
         $data = $request->validated();
+        echo "il";
 
         $eventType = EventType::create($data);
 

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\EventController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -49,3 +50,6 @@ Route::post(
     '/reset-password',
     [UserController::class, 'resetPassword']
 );
+
+Route::get('/event/list-types', [EventController::class, 'listEventType']);
+Route::post('/event/create-type', [EventController::class, 'storeEventType']);
