@@ -25,6 +25,7 @@ class EventResource extends JsonResource
             'eventTypeId' => new EventTypeResource($getEventType),
             'createdBy' => $this->createdBy,
             'slug' => $this->slug,
+            'amount' => $this->amount,
             'images' => EventGalleryResource::collection($getImage),
             'status' => !!$this->status,
             'location' => $this->location,
