@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\EventRequest;
 use App\Http\Requests\EventTypeRequest;
+use App\Http\Resources\EventResource;
 use App\Http\Resources\EventTypeResource;
 use App\Http\Resources\UpdateEventTypeResource;
+use App\Models\Event;
 use App\Models\EventType;
 
 class EventController extends Controller
@@ -26,9 +29,29 @@ class EventController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(EventRequest $request)
     {
-        
+        $data = $request->validated();
+
+        // Check if image was given and save on local file system
+        /*
+        if (isset($data['image'])) {
+            $relativePath = $this->saveImage($data['image']);
+            $data['image'] = $relativePath;
+        }
+        */
+
+        $event = Event::create($data);
+
+        // Create new questions
+        /*
+        foreach ($data['questions'] as $question) {
+            $question['survey_id'] = $survey->id;
+            $this->createQuestion($question);
+        }
+        */
+
+        return new EventResource($event);
     }
 
     /**
