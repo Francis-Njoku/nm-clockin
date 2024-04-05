@@ -3,13 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\EventRequest;
 use App\Http\Requests\EventTypeRequest;
+use App\Http\Requests\EventGalleryRequest;
 use App\Http\Resources\EventResource;
 use App\Http\Resources\EventTypeResource;
 use App\Http\Resources\UpdateEventTypeResource;
 use App\Models\Event;
 use App\Models\EventType;
+use App\Models\EventGallery;
 
 class EventController extends Controller
 {
@@ -52,6 +57,79 @@ class EventController extends Controller
         */
 
         return new EventResource($event);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */   
+    public function storeImage(Request $request, $id) 
+    {
+        $checkID = Event::findOrFail($id);
+        $getUser = DB::table('events')
+        ->select('createdBy')
+        ->where('id',$id)
+        ->get()
+        ->toArray();
+        foreach ($getUser as $gets)
+        {
+            $checker = $gets->createdBy;
+            echo $checker;
+        };
+
+        if (Auth::id() != $checker)
+        {
+                return response()->json([
+                'message' => 'Not authorized to process this'], 401);
+        }
+
+        $newdata = [];
+        
+        $postObj = new EventGallery;
+
+        if($request->hasFile('featured')) {
+            //echo "emeka";
+            $filename = $request->file('featured')->getClientOriginalName(); // get the file name
+            $getfilenamewitoutext = pathinfo($filename, PATHINFO_FILENAME); // get the file name without extension
+            $getfileExtension = $request->file('featured')->getClientOriginalExtension(); // get the file extension
+            $createnewFileName = time().'_'.str_replace(' ','_', $getfilenamewitoutext).'.'.$getfileExtension; // create new random file name
+            $img_path = $request->file('featured')->storeAs('public/featured_img', $createnewFileName); // get the image path
+            $postObj->image = $createnewFileName; // pass file name with column
+            $postObj->isFeatured = 1;
+            //echo "emeka";
+            $postObj->eventId = $id; 
+        }
+
+            $files = $request->allFiles('images');
+
+            $uploadedImagePaths = [];
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $fileName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                    $path = $image->storeAs('public/featured_img', $fileName);
+    
+                    // Create a new record in the database
+                    $imageRecord = new EventGallery();
+                    $imageRecord->image = $fileName;
+                    $imageRecord->isFeatured = 0;
+                    $imageRecord->eventId = $id;
+                    //$imageRecord->path = $path;
+                    $imageRecord->save();
+    
+                    $uploadedImagePaths[] = ['image' => $fileName, 'isFeatured' => 0, 'eventId' => $id];
+                }
+            }
+
+        if($postObj->save()) { // save file in databse
+            return ['status' => true, 'message' => "Image uploded successfully"];       
+        }
+        else {
+            return ['status' => false, 'message' => "Error : Image not uploded successfully"];       
+
+        }
     }
 
     /**
@@ -164,7 +242,7 @@ class EventController extends Controller
                 throw new \Exception('base64_decode failed');
             }
         } else {
-            throw new \Exception('did nit match data URI with image data');
+            throw new \Exception('did not match data URI with image data');
         }
 
         $dir = 'images/';
