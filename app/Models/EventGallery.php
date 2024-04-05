@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class EventGallery extends Model
 {
     use HasFactory;
-    protected $fillable = ['eventId', 'image', 'isFeatured'];
+    
+    protected $fillable = ['image', 'isFeatured', 'eventId'];
 }
