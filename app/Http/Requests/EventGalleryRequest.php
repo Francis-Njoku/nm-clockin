@@ -24,8 +24,8 @@ class EventGalleryRequest extends FormRequest
     public function rules()
     {
         return [
-            'image' => $this->name,
-            'isFeatured' => $this->isFeatured
+            'featured' => 'nullable|string',
+            'images' => 'nullable|string'
         ];
     }
 }
