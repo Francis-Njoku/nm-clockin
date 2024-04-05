@@ -57,4 +57,6 @@ Route::patch('/event/type/{id}', [EventController::class, 'updateEventType']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/event/new', [EventController::class, 'store']);
+    Route::post('/event/image/new/{id}', [EventController::class, 'storeImage']);
+
 });
