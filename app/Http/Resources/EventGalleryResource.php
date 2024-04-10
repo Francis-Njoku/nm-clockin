@@ -3,7 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\URL;
 
 class EventGalleryResource extends JsonResource
 {
@@ -17,7 +17,7 @@ class EventGalleryResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'image_url' => $this->image ? URL::to($this->image) : null,
+            'image_url' => $this->image ? URL::to('storage/featured_img/'.$this->image) : null,
             'isFeatured' => $this->isFeatured,
             'created_at' => (new \DateTime($this->created_at))->format('Y-m-d H:i:s'),
             'updated_at' => (new \DateTime($this->updated_at))->format('Y-m-d H:i:s'),

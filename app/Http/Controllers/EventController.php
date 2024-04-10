@@ -25,7 +25,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        //
+        return EventResource::collection(Event::all());
     }
 
     /**
@@ -99,7 +99,7 @@ class EventController extends Controller
             $postObj->image = $createnewFileName; // pass file name with column
             $postObj->isFeatured = 1;
             //echo "emeka";
-            $postObj->eventId = $id; 
+            $postObj->event_id = $id; 
         }
 
             $files = $request->allFiles('images');
@@ -115,11 +115,11 @@ class EventController extends Controller
                     $imageRecord = new EventGallery();
                     $imageRecord->image = $fileName;
                     $imageRecord->isFeatured = 0;
-                    $imageRecord->eventId = $id;
+                    $imageRecord->event_id = $id;
                     //$imageRecord->path = $path;
                     $imageRecord->save();
     
-                    $uploadedImagePaths[] = ['image' => $fileName, 'isFeatured' => 0, 'eventId' => $id];
+                    $uploadedImagePaths[] = ['image' => $fileName, 'isFeatured' => 0, 'event_id' => $id];
                 }
             }
 

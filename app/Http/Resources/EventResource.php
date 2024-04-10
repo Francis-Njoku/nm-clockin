@@ -5,6 +5,8 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
+use App\Http\Resources\EventGalleryResource;
+use App\Models\EventGallery;
 
 class EventResource extends JsonResource
 {
@@ -17,7 +19,7 @@ class EventResource extends JsonResource
     public function toArray($request)
     {
         $getEventType = DB::table('event_types')->where('id', '=', $this->eventTypeId)->get();
-        $getImage  = DB::table('event_gallerys')->where('id', '=', $this->eventTypeId)->get();
+        $getImage  = DB::table('event_galleries')->where('event_id', '=', $this->id);
 
         return [
             'id' => $this->id,
@@ -26,7 +28,11 @@ class EventResource extends JsonResource
             'createdBy' => $this->createdBy,
             'slug' => $this->slug,
             'amount' => $this->amount,
-            'images' => !!EventGalleryResource::collection($getImage),
+            //'images' => !!EventGalleryResource::collection($getImage),
+            //'images' => !!EventGalleryResource::collection(EventGallery::all()),
+            'images' => EventGalleryResource::collection($this->images),
+            //'images' =>  $getImage,
+            //'images' => EventGallery::resource(this->whenLoaded('images')),
             'status' => !!$this->status,
             'location' => $this->location,
             'excerpt' => $this->excerpt,
