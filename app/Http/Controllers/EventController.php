@@ -23,9 +23,18 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return EventResource::collection(Event::all());
+        $filter = $request->get('s');
+        if($filter)
+        {
+            echo $filter;
+            return EventResource::collection(Event::where('location', 'like', '%'.$filter.'%')->paginate(3));
+        }
+        else{
+            return EventResource::collection(Event::all());
+        }
+        
     }
 
     /**
