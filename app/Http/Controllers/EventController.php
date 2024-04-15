@@ -152,13 +152,26 @@ class EventController extends Controller
      */
     public function show($slug)
     {
-        echo $slug;
-        $getEvent = Event::where('slug', $slug)->get();
-        //print_r($getEvent);
-        //print_r($getEvent);
-        return EventResource::collection(
-            Event::where('slug', $slug)
-            ->paginate(10));
+        $getUser = DB::table('events')
+        ->select('id')
+        ->where('slug',$slug)
+        ->get()
+        ->toArray();
+        if (!$getUser) {
+            return response()->json(['message' => 'Event not found'], 404);
+        }
+        foreach ($getUser as $gets)
+        {
+            $checker = $gets->id;
+            echo $checker;
+        };
+
+        //echo $slug;
+        $item = Event::find($checker);
+    /*if (!$item) {
+        return response()->json(['message' => 'Item not found'], 404);
+    }*/
+    return new EventResource($item);
     }
 
     /**
