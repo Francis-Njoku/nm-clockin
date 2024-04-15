@@ -51,22 +51,8 @@ class EventController extends Controller
         $data = $request->validated();
 
         // Check if image was given and save on local file system
-        /*
-        if (isset($data['image'])) {
-            $relativePath = $this->saveImage($data['image']);
-            $data['image'] = $relativePath;
-        }
-        */
 
         $event = Event::create($data);
-
-        // Create new questions
-        /*
-        foreach ($data['questions'] as $question) {
-            $question['survey_id'] = $survey->id;
-            $this->createQuestion($question);
-        }
-        */
 
         return new EventResource($event);
     }
