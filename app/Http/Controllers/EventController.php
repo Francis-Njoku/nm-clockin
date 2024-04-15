@@ -29,7 +29,10 @@ class EventController extends Controller
         if($filter)
         {
             echo $filter;
-            return EventResource::collection(Event::where('location', 'like', '%'.$filter.'%')->paginate(3));
+            return EventResource::collection(
+                Event::where('state', 'like', '%'.$filter.'%')
+                ->orWhere('country', 'like', '%'.$filter.'%')
+                ->paginate(10));
         }
         else{
             return EventResource::collection(Event::all());
