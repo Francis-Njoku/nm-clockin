@@ -154,10 +154,8 @@ class EventController extends Controller
 
         //echo $slug;
         $item = Event::find($checker);
-    /*if (!$item) {
-        return response()->json(['message' => 'Item not found'], 404);
-    }*/
-    return new EventResource($item);
+
+        return new EventResource($item);
     }
 
     /**
