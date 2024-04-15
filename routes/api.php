@@ -54,6 +54,7 @@ Route::get('/events', [EventController::class, 'index']);
 Route::get('/event/list-types', [EventController::class, 'listEventType']);
 Route::post('/event/create-type', [EventController::class, 'storeEventType']);
 Route::patch('/event/type/{id}', [EventController::class, 'updateEventType']);
+Route::get('/event/{slug}', [EventController::class, 'show']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/event/new', [EventController::class, 'store']);

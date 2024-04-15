@@ -150,9 +150,15 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($slug)
     {
-        //
+        echo $slug;
+        $getEvent = Event::where('slug', $slug)->get();
+        //print_r($getEvent);
+        //print_r($getEvent);
+        return EventResource::collection(
+            Event::where('slug', $slug)
+            ->paginate(10));
     }
 
     /**
