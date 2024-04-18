@@ -13,9 +13,14 @@ class StoreBookingRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
-
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'user_id' => $this->user()->id
+        ]);
+    }
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,7 +29,10 @@ class StoreBookingRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'user_id' => 'exists:users,id',
+            'event_id' => 'required|string',
+            'ticket' => 'required|string',
+            'attended' => 'required|boolean'
         ];
     }
 }
