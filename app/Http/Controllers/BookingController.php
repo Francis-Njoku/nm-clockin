@@ -6,9 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
+use App\Http\Resources\EventResource;
+use App\Models\Booking;
 
 class BookingController extends Controller
 {
@@ -30,7 +31,11 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request)
     {
-        //
+        $data = $request->validated();
+
+        $booking = Booking::create($data);
+
+        return new BookingResource($booking);
     }
 
     /**
