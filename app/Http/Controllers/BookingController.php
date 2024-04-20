@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\EventResource;
+use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 
 class BookingController extends Controller
@@ -29,9 +30,25 @@ class BookingController extends Controller
      * @param  \App\Http\Requests\StoreBookingRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreBookingRequest $request)
+    public function store(StoreBookingRequest $request, $slug)
     {
+        $getUser = DB::table('events')
+        ->select('id')
+        ->where('slug',$slug)
+        ->get()
+        ->toArray();
+        if (!$getUser) {
+            return response()->json(['message' => 'Event not found'], 404);
+        }
+        foreach ($getUser as $gets)
+        {
+            $checker = $gets->id;
+            //echo $checker;
+        };
+
         $data = $request->validated();
+
+        $data['event_id'] = $checker;
 
         $booking = Booking::create($data);
 

@@ -30,7 +30,6 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             'user_id' => 'exists:users,id',
-            'event_id' => 'required|string',
             'ticket' => 'required|string',
             'attended' => 'required|boolean'
         ];

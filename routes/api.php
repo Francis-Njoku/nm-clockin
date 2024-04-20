@@ -2,9 +2,11 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\UserController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\Api\UserController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -57,7 +59,8 @@ Route::patch('/event/type/{id}', [EventController::class, 'updateEventType']);
 Route::get('/event/{slug}', [EventController::class, 'show']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::post('/event/new', [EventController::class, 'store']);
+    Route::post('/event/new/', [EventController::class, 'store']);
     Route::post('/event/image/new/{id}', [EventController::class, 'storeImage']);
+    Route::post('/event/{slug}', [BookingController::class, 'store']);
 
 });

@@ -48,7 +48,9 @@ class EventController extends Controller
      */
     public function store(EventRequest $request)
     {
+        echo "biggie";
         $data = $request->validated();
+
 
         // Check if image was given and save on local file system
 
@@ -149,7 +151,7 @@ class EventController extends Controller
         foreach ($getUser as $gets)
         {
             $checker = $gets->id;
-            echo $checker;
+            //echo $checker;
         };
 
         //echo $slug;

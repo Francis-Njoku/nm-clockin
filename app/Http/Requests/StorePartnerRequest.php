@@ -13,9 +13,14 @@ class StorePartnerRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
-
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'createdBy' => $this->user()->id
+        ]);
+    }
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,7 +29,11 @@ class StorePartnerRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'partnerName' => 'required|string|max:1000',
+            'partnerDetails' => 'required|string|max:1000',
+            'createdBy' => 'exists:users,id',
+            'banner' => 'nullable|string',
+            'logo' => 'nullable|string',
         ];
     }
 }

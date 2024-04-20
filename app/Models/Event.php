@@ -22,4 +22,9 @@ class Event extends Model
     {
         return $this->hasMany(EventGallery::class);
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
 }

@@ -30,16 +30,18 @@ class EventRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:1000',
+            'name' => 'required|string',
             'createdBy' => 'exists:users,id',
-            'eventTypeId' => 'nullable|string',
-            'amount' => 'nullable|string',
+            'eventTypeId' => 'required|string',
+            'amount' => 'required|string',
+            'state' => 'required|string',
+            'country' => 'required|string',
             'status' => 'required|boolean',
             'location' => 'required|string',
-            'excerpt' => 'nullable|string',
-            'description' => 'nullable|string',
-            'start' => 'nullable|date|after:tomorrow',
-            'end' => 'nullable|date|after:tomorrow',
+            'excerpt' => 'required|string',
+            'description' => 'required|string',
+            'start' => 'required|date|after:tomorrow',
+            'end' => 'required|date|after:tomorrow',
         ];
     }
 }
