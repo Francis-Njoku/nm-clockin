@@ -25,7 +25,6 @@ class BookingResource extends JsonResource
             'user_id' => $getUser,   
             'ticket' => $this->ticket,
             'attended' => $this->attended
-
         ];
     }
 }
