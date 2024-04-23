@@ -39,6 +39,8 @@ class EventRequest extends FormRequest
             'status' => 'required|boolean',
             'location' => 'required|string',
             'excerpt' => 'required|string',
+            'quantity' => 'required|string',
+            'registration' => 'required|string',
             'description' => 'required|string',
             'start' => 'required|date|after:tomorrow',
             'end' => 'required|date|after:tomorrow',

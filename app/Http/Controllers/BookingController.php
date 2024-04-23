@@ -33,22 +33,27 @@ class BookingController extends Controller
     public function store(StoreBookingRequest $request, $slug)
     {
         $getUser = DB::table('events')
-        ->select('id')
+        ->select('id','registration','amount','quantity','booked')
         ->where('slug',$slug)
         ->get()
         ->toArray();
         if (!$getUser) {
             return response()->json(['message' => 'Event not found'], 404);
         }
+
         foreach ($getUser as $gets)
         {
-            $checker = $gets->id;
+            $event_id = $gets->id;
+            $registration = $get->registration;
+            $amount = $get->amount;
+            $quantity = $get->quantity;
+            $booked = $get->booked;
             //echo $checker;
         };
 
         $data = $request->validated();
 
-        $data['event_id'] = $checker;
+        $data['event_id'] = $event_id;
 
         $booking = Booking::create($data);
 
