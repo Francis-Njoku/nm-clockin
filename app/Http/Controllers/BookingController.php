@@ -32,6 +32,8 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request, $slug)
     {
+        $data = $request->validated();
+
         $getUser = DB::table('events')
         ->select('id','registration','amount','quantity','booked')
         ->where('slug',$slug)
@@ -51,7 +53,22 @@ class BookingController extends Controller
             //echo $checker;
         };
 
-        $data = $request->validated();
+        if ($booked >= $quantity)
+        {
+            return response()->json(['message' => 'Ticket sold out'], 422);
+        }else{
+            $checkBooked = DB::table('bookings')
+            ->where('event_id',$event_id)
+            ->get();
+            if ($registration == 'single' && $checkBooked === null)
+            {
+                $newBooked = $booked + 1;
+                $updateBooked = Event::find($event_id);
+                $updateBooked->booked = $newBooked;
+                $updateBooked->save();
+            }
+        }
+
 
         $data['event_id'] = $event_id;
 
