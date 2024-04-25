@@ -67,6 +67,24 @@ class BookingController extends Controller
                 $updateBooked->booked = $newBooked;
                 $updateBooked->save();
             }
+            elseif ($registration == 'single' && $checkBooked != null){
+                return response()->json(['message' => 'You have already purchased a ticket'], 422);
+            }else
+            {
+                if($booked + $data['ticket'] <= $quantity)
+                {
+                    $newBooked = $booked + $data['ticket'];
+                    $updateBooked = Event::find($event_id);
+                    $updateBooked->booked = $newBooked;
+                    $updateBooked->save();
+                }
+                else
+                {
+                    return response()->json(['message' => 'You cannot purchase more than the available ticket'], 422);
+
+                }
+                
+            }
         }
 
 
