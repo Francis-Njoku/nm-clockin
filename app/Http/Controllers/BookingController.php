@@ -14,14 +14,38 @@ use App\Models\Booking;
 
 class BookingController extends Controller
 {
+    /***
+     * Generate user Identity
+     * @param No params
+     * @return unique Identity
+     */
+    private function generateIdentity()
+    {
+        $randomNumber = random_int(10000000000000000, 99999999999999999);
+        if (Booking::where('identity', '=', $randomNumber)->exists()) {
+            return $this->generateIdentity();
+         }
+         else{
+            return $randomNumber;
+         }
+    }
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $filter = $request->get('s');
+        if ($filter)
+        {
+            return BookingResource::collection(
+                Booking::all()
+            );
+        }
+        else{
+            return BookingResource::collection(Booking::all());
+        }
     }
 
     /**
@@ -89,6 +113,7 @@ class BookingController extends Controller
 
 
         $data['event_id'] = $event_id;
+        $data['identity'] = $this->generateIdentity();
 
         $booking = Booking::create($data);
 

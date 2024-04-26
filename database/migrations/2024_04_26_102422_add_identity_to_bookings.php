@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddIdentityToUsers extends Migration
+class AddIdentityToBookings extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class AddIdentityToUsers extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('bookings', function (Blueprint $table) {
             $table->string('identity', 1000)->nullable()->after('ticket');
         });
     }
@@ -25,8 +25,9 @@ class AddIdentityToUsers extends Migration
      */
     public function down()
     {
-        Schema::table('identity', function (Blueprint $table) {
+        Schema::table('bookings', function (Blueprint $table) {
             $table->dropColumn('identity');
+
         });
     }
 }

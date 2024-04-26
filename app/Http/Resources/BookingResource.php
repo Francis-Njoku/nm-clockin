@@ -24,6 +24,7 @@ class BookingResource extends JsonResource
             'event' =>  new EventResource($this->event),
             'user_id' => $getUser,   
             'ticket' => $this->ticket,
+            'identity' => $this->identity,
             'attended' => $this->attended
         ];
     }
