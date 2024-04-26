@@ -23,6 +23,21 @@ use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
+    /***
+     * Generate Identity
+     * @param No params
+     * @return unique Identity
+     */
+    private function generateIdentity()
+    {
+        $randomNumber = random_int(10000000000000, 99999999999999);
+        if (User::where('identity', '=', $randomNumber)->exists()) {
+            return $this->generateIdentity();
+         }
+         else{
+            return $randomNumber;
+         }
+    }
     //
     /***
      * Create User
@@ -59,6 +74,7 @@ class UserController extends Controller
                 'firstName' => $request->firstname,
                 'lastName' => $request->lastname,
                 'phone' => $request->phone,
+                'identity' => $this->generateIdentity(),
                 'isStaff' => 1,
                 'password' => Hash::make($request->password)
             ]);

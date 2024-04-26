@@ -29,6 +29,7 @@ class UserResource extends JsonResource
             'lastName' => $this->createdBy,
             'phone' => $this->phone,
             'email' => $this->email,
+            'identity' => $this->identity,
             'group' => UserGroupResource::collection($getGroup),
             'isStaff' => $this->isStaff,
             'created_at' => (new \DateTime($this->created_at))->format('Y-m-d H:i:s'),
