@@ -11,6 +11,8 @@ use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\EventResource;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
+use App\Models\Event;
+use App\Models\User;
 
 class BookingController extends Controller
 {
@@ -34,18 +36,55 @@ class BookingController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index(Request $request, $name)
     {
-        $filter = $request->get('s');
-        if ($filter)
-        {
-            return BookingResource::collection(
-                Booking::all()
-            );
+        if (User::where('identity', '=', $name)->where('id', Auth::id())->exists()) {
+            $filter = $request->get('s');
+            echo "school";
+            if ($filter)
+            {
+                $checkSearch = Event::select('id')->where('state', 'like', '%'.$filter.'%')
+                ->orWhere('country', 'like', '%'.$filter.'%')->orWhere('name', 'like', '%'.$filter.'%');
+                if($checkSearch != null)
+                {
+                    $news = BookingResource::collection(
+                        Booking::join('events', 'bookings.event_id', '=', 'events.id')
+                        ->select('bookings.*')
+                        ->where('bookings.user_id',Auth::id())
+                        ->where(function($query) use ($request){
+                            $query->where('events.state', 'like', '%'.$request->get('s').'%')
+                            ->orWhere('events.country', 'like', '%'.$request->get('s').'%')
+                            ->orWhere('events.name', 'like', '%'.$request->get('s').'%');
+                        })
+                        ->paginate(10));
+                        
+                    return $news;
+                }
+                else{
+                    return BookingResource::collection(
+                    DB::table('bookings')
+                    ->join('events', 'bookings.event_id', '=', 'events.id')
+                    ->select('bookings.*' )
+                    ->where('bookings.user_id',Auth::id())
+                    ->where(function($query) use ($request){
+                        $query->where('events.state', 'like', '%'.$filter.'%')
+                        ->orWhere('events.country', 'like', '%'.$filter.'%')
+                        ->orWhere('events.name', 'like', '%'.$filter.'%');
+                    })->paginate(10));
+                }
+            }
+            else
+            {
+                echo "lexis";
+                return BookingResource::collection(Booking::where('identity', '=', $name)
+                ->where('user_id', Auth::id())
+                ->paginate(10));
+            } 
         }
         else{
-            return BookingResource::collection(Booking::all());
+            return response()->json(['message' => 'User not found'], 404);
         }
+        
     }
 
     /**
