@@ -165,9 +165,28 @@ class BookingController extends Controller
      * @param  \App\Models\Booking  $booking
      * @return \Illuminate\Http\Response
      */
-    public function show(Booking $booking)
+    public function show(Booking $booking, $identity)
     {
-        //
+        if (Booking::where('identity', '=', $identity)->where('user_id', Auth::id())->exists())
+        {
+            $getEvents = DB::table('bookings')
+            ->select('id')
+            ->where('identity',$identity)
+            ->get()
+            ->toArray();
+            foreach ($getEvents as $gets)
+            {
+                $checker = $gets->id;
+                //echo $checker;
+            };
+            $item = Booking::find($checker);
+
+            return new BookingResource($item);
+        }
+        else{
+            return response()->json(['message' => 'Page not found'], 404);
+
+        }
     }
 
     /**

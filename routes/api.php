@@ -63,5 +63,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/event/image/new/{id}', [EventController::class, 'storeImage']);
     Route::post('/event/{slug}', [BookingController::class, 'store']);
     Route::get('/u/{name}/', [BookingController::class, 'index']);
+    Route::get('/b/{identity}/', [BookingController::class, 'show']);
 
 });
