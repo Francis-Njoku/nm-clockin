@@ -28,7 +28,7 @@ class EventController extends Controller
         $filter = $request->get('s');
         if($filter)
         {
-            echo $filter;
+            //echo $filter;
             return EventResource::collection(
                 Event::where('state', 'like', '%'.$filter.'%')
                 ->orWhere('country', 'like', '%'.$filter.'%')
@@ -48,7 +48,7 @@ class EventController extends Controller
      */
     public function store(EventRequest $request)
     {
-        echo "biggie";
+        //echo "biggie";
         $data = $request->validated();
 
 
