@@ -14,7 +14,7 @@ class AddIdentityToUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('identity', 1000)->nullable()->after('ticket');
+            $table->string('identity', 1000)->nullable()->after('email');
         });
     }
 

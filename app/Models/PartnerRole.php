@@ -9,5 +9,5 @@ class PartnerRole extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['partnerName', 'partnerDetails', 'slug', 'banner', 'logo', 'createdBy'];
+    protected $fillable = ['partner_id', 'event_id', 'role', 'createdBy'];
 }
