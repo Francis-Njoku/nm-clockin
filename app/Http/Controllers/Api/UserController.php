@@ -54,12 +54,6 @@ class UserController extends Controller
             return $randomNumber;
          }
     }
-    //
-    /***
-     * Create User
-     * @param Request $request
-     * @return User
-     */
     private function isValidTimezoneId($usertimezone) {
         try{
             new DateTimeZone($usertimezone);
@@ -88,6 +82,11 @@ class UserController extends Controller
         echo $nntime;
 
     }
+    /***
+     * Create User
+     * @param Request $request
+     * @return User
+     */
     public function createUser(Request $request)
     {
         try {
@@ -113,6 +112,8 @@ class UserController extends Controller
                     'errors' => $validateUser->errors()
                 ], 401);
             }
+
+            $this->isValidTimezoneId($request->gmt);
 
             if($request->manager_id)
             {
