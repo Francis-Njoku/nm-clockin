@@ -29,7 +29,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'hasManager', 
         'joined',
         'manager_id',
-        'status'
+        'status',
+        'gmt'
     ];
 
     /**

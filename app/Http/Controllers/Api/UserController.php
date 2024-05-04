@@ -38,12 +38,56 @@ class UserController extends Controller
             return $randomNumber;
          }
     }
+
+      /***
+     * Generate Identity
+     * @param No params
+     * @return unique Identity
+     */
+    private function generateUser()
+    {
+        $randomNumber = random_int(100000, 999999);
+        if (User::where('name', '=', $randomNumber)->exists()) {
+            return $this->generateIdentity();
+         }
+         else{
+            return $randomNumber;
+         }
+    }
     //
     /***
      * Create User
      * @param Request $request
      * @return User
      */
+    private function isValidTimezoneId($usertimezone) {
+        try{
+            new DateTimeZone($usertimezone);
+            return true;
+        }catch(Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => 'Wrong Timezone, please try again'
+            ], 500);
+        }
+        return true;
+    }
+    private function getTimeZone($getZome)
+    {
+        $usertimezone="Africa/Lagos"; 
+
+        date_default_timezone_set($usertimezone); 
+
+        //new date and time
+        $ndate= new datetime();
+        //split into date and time seperate
+        $nndate =$ndate->format("Y-m-d");
+        $nntime= $ndate->format("H:i:S");
+        //here you can test it
+        echo $nndate.'<br/>';
+        echo $nntime;
+
+    }
     public function createUser(Request $request)
     {
         try {
@@ -51,12 +95,12 @@ class UserController extends Controller
             $validateUser = Validator::make(
                 $request->all(),
                 [
-                    'name' => 'required',
                     'firstName' => '',
                     'lastName' => '',
                     'phone' => '',
                     'joined' => 'required',
                     'hasManager' => '',
+                    'gmt' => 'required',
                     'email' => 'required|email|unique:users,email',
                     'password' => 'required'
                 ]
@@ -73,7 +117,7 @@ class UserController extends Controller
             if($request->manager_id)
             {
                 $user = User::create([
-                    'name' => $request->name,
+                    'name' => $this->generateUser(),
                     'email' => $request->email,
                     'firstName' => $request->firstname,
                     'lastName' => $request->lastname,
@@ -89,7 +133,7 @@ class UserController extends Controller
             }
             else{
                 $user = User::create([
-                    'name' => $request->name,
+                    'name' => $this->generateUser(),
                     'email' => $request->email,
                     'firstName' => $request->firstname,
                     'lastName' => $request->lastname,

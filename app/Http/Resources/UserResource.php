@@ -35,6 +35,7 @@ class UserResource extends JsonResource
             'isStaff' => $this->isStaff,
             'hasManager' => $this->hasManager,
             'manager' => $getUser,
+            'gmt' => $this->gmt,
             'joined' => (new \Date($this->joined))->format('Y-m-d'),
             'created_at' => (new \DateTime($this->created_at))->format('Y-m-d H:i:s'),
             'updated_at' => (new \DateTime($this->updated_at))->format('Y-m-d H:i:s'),
