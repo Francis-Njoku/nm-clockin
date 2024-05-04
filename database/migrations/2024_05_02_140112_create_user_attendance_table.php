@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddAdminToUser extends Migration
+class CreateUserAttendanceTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,11 @@ class AddAdminToUser extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->boolean('isStaff', false)->after('password');
+        Schema::create('attendances', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('status');
+            $table->timestamps();
         });
     }
 
@@ -25,8 +28,6 @@ class AddAdminToUser extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('isStaff');
-        });
+        Schema::dropIfExists('attendances');
     }
 }
