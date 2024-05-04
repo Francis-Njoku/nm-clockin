@@ -3,9 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Api\UserController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +60,8 @@ Route::post('/event/create-type', [EventController::class, 'storeEventType']);
 Route::patch('/event/type/{id}', [EventController::class, 'updateEventType']);
 Route::get('/event/{slug}', [EventController::class, 'show']);
 Route::post('/group', [EventController::class, 'index']);
+Route::get('/attendance/{attendance}', [AttendanceController::class, 'show']);
+Route::get('/attendance/', [AttendanceController::class, 'index']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/event/new/', [EventController::class, 'store']);

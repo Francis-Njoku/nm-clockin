@@ -13,7 +13,15 @@ class StoreUserAttendanceRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
+    }
+
+    // Validation
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'user_id' => $this->user()->id
+        ]);
     }
 
     /**
@@ -24,7 +32,7 @@ class StoreUserAttendanceRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'punch' => 'required'
         ];
     }
 }

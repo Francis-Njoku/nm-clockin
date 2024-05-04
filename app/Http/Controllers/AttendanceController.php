@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\User;
 use App\Http\Requests\StoreAttendanceRequest;
 use App\Http\Requests\UpdateAttendanceRequest;
 use App\Http\Resources\UserResource;
+use App\Http\Resources\AttendanceResource;
 
 class AttendanceController extends Controller
 {
@@ -15,19 +17,18 @@ class AttendanceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $filter = $request->get('s');
         if($filter)
         {
             //echo $filter;
-            return UserResource::collection(
-                User::where('state', 'like', '%'.$filter.'%')
-                ->orWhere('country', 'like', '%'.$filter.'%')
+            return AttendanceResource::collection(
+                Attendance::where('name', 'like', '%'.$filter.'%')
                 ->paginate(10));
         }
         else{
-            return UserResource::collection(User::all());
+            return AttendanceResource::collection(Attendance::all());
         }
     }
 
@@ -50,7 +51,7 @@ class AttendanceController extends Controller
      */
     public function show(Attendance $attendance)
     {
-        //
+        return new AttendanceResource($attendance);
     }
 
     /**
