@@ -28,7 +28,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'hasManager', 
         'joined',
-        'manager_id'
+        'manager_id',
+        'status'
     ];
 
     /**
@@ -49,4 +50,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function Manager()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

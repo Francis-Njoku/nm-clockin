@@ -20,6 +20,7 @@ class UserResource extends JsonResource
         //$usergroup = DB::UserGroup();
 
         $getGroup = DB::table('usergroup')->where('user_id', '=', $this->id)->get();
+        $getUser = DB::table('users')->select('firstName','lastName','email')->where('id', '=', $this->manager_id)->get();
         //UserGroup::where('user_id', $this->id)->get();
 
         return [
@@ -32,6 +33,9 @@ class UserResource extends JsonResource
             'identity' => $this->identity,
             'group' => UserGroupResource::collection($getGroup),
             'isStaff' => $this->isStaff,
+            'hasManager' => $this->hasManager,
+            'manager' => $getUser,
+            'joined' => (new \Date($this->joined))->format('Y-m-d'),
             'created_at' => (new \DateTime($this->created_at))->format('Y-m-d H:i:s'),
             'updated_at' => (new \DateTime($this->updated_at))->format('Y-m-d H:i:s'),
         ];

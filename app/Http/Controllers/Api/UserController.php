@@ -55,6 +55,8 @@ class UserController extends Controller
                     'firstName' => '',
                     'lastName' => '',
                     'phone' => '',
+                    'joined' => 'required',
+                    'hasManager' => '',
                     'email' => 'required|email|unique:users,email',
                     'password' => 'required'
                 ]
@@ -68,16 +70,39 @@ class UserController extends Controller
                 ], 401);
             }
 
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'firstName' => $request->firstname,
-                'lastName' => $request->lastname,
-                'phone' => $request->phone,
-                'identity' => $this->generateIdentity(),
-                'isStaff' => 1,
-                'password' => Hash::make($request->password)
-            ]);
+            if($request->manager_id)
+            {
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'firstName' => $request->firstname,
+                    'lastName' => $request->lastname,
+                    'phone' => $request->phone,
+                    'identity' => $this->generateIdentity(),
+                    'isStaff' => 1,
+                    'status' => 'approved',
+                    'hasManager' => $request->hasManager,
+                    'joined' => $request->joined,
+                    'manager_id' => $request->manager_id,
+                    'password' => Hash::make($request->password)
+                ]);
+            }
+            else{
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'firstName' => $request->firstname,
+                    'lastName' => $request->lastname,
+                    'phone' => $request->phone,
+                    'identity' => $this->generateIdentity(),
+                    'isStaff' => 1,
+                    'status' => 'approved',
+                    'hasManager' => $request->hasManager,
+                    'joined' => $request->joined,
+                    'password' => Hash::make($request->password)
+                ]);
+            }
+
 
             $userGroup = UserGroup::create([
                 'user_id' => $user->id,
@@ -155,7 +180,7 @@ class UserController extends Controller
 
         return response()->success([], 'logged out', 200);
     }
-
+ 
     /**
      * @param ForgotPasswordRequest $request
      * @return JsonResponse
