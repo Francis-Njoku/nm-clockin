@@ -355,48 +355,6 @@ class UserController extends Controller
      * @throws ValidationException
      */
 
-    /**
-    public function forgot(ForgotPasswordRequest $request): JsonResource
-    {
-        
-        $user = ($query = User::query());
-
-        $user = $user->where($query->qualifyColumn('email'), $request->input('email'))->first();
-
-        // if no such user exists then throw an error
-        if (!$user || !$user->email) {
-            return response()->error('No Record Found', 'Incorrect Email Address Provided', 404);
-        }
-
-        // Generate a 4 digit random Token
-        $resetPasswordToken = str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
-
-        // In case User has already requested for forgot password don't create another record
-        // Instead update the existing token with the new token
-        if (!$userPassReset = PasswordReset::where('email', $user->email)->first()) {
-            // Store TOken in DB with Token Expiration Time ié: 1 hour
-            PasswordReset::create([
-                'email' => $user->email,
-                'token' => $resetPasswordToken,
-            ]);
-        } else {
-            // Store Token in DB with Token expiration time 1 hour
-            $userPassReset->update([
-                'email' => $user->email,
-                'token' => $resetPasswordToken,
-            ]);
-        }
-        // Send notification to the user about the reset token
-        $user->notify(
-            new PasswordResetNotification(
-                $user,
-                $resetPasswordToken
-            )
-        );
-
-        return new JsonResponse(['message' => 'A Code has been Sent to your Email Address.']);
-    }
-     */
 
     /**
      * Display the specified resource.
@@ -413,4 +371,6 @@ class UserController extends Controller
         }*/
         return UserResource::collection(User::paginate(10));
     }
+
+    
 }

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\UserAttendanceController;
 use App\Http\Controllers\Api\UserController;
 
 
@@ -69,5 +70,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/event/{slug}', [BookingController::class, 'store']);
     Route::get('/u/{name}/', [BookingController::class, 'index']);
     Route::get('/b/{identity}/', [BookingController::class, 'show']);
+    Route::post('/punch/', [UserAttendanceController::class, 'store']);
 
 });
