@@ -71,5 +71,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/u/{name}/', [BookingController::class, 'index']);
     Route::get('/b/{identity}/', [BookingController::class, 'show']);
     Route::post('/punch/', [UserAttendanceController::class, 'store']);
+    Route::get('/user/attendance/', [UserAttendanceController::class, 'index']);
 
+});
+
+Route::group(['as'=>'admin','prefix' => 'admin','namespace'=>'admin','middleware'=>['auth:sanctum','admin']], function () {
+    Route::post('/log/users/', [UserAttendanceController::class, 'listAll'])->name('listAll');
 });

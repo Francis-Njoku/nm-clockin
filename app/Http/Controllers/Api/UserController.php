@@ -202,11 +202,17 @@ class UserController extends Controller
             }
 
             $user = User::where('email', $request->email)->first();
+            $getGroup = UserGroup::where('user_id',Auth::id())->get();
+            foreach ($getGroup as $group)
+            {
+                $group_id = $group->group_id;
+            }
 
             return response()->json([
                 'status' => true,
                 'message' => 'User Logged In Successfully',
-                'token' => $user->createToken("API TOKEN")->plainTextToken
+                'token' => $user->createToken("API TOKEN")->plainTextToken,
+                'group_id' => $group_id
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([

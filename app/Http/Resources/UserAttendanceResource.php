@@ -24,7 +24,7 @@ class UserAttendanceResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'attendance' =>  new AttendanceResource($this->attendance_id),
+            'attendance' =>  new AttendanceResource($this->attendance),
             'user_id' => $getUser,   
             'ipAddress' => $this->ipAddress,
             'clock' => (new \DateTime($this->start))->format('Y-m-d H:i:s'),

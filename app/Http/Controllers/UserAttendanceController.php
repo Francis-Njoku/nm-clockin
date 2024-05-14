@@ -6,6 +6,7 @@ use App\Models\UserAttendance;
 use App\Models\User;
 use App\Http\Requests\StoreUserAttendanceRequest;
 use App\Http\Requests\UpdateUserAttendanceRequest;
+use App\Http\Resources\UserAttendanceResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -51,7 +52,10 @@ class UserAttendanceController extends Controller
      */
     public function index()
     {
-        //
+        return UserAttendanceResource::collection(
+            UserAttendance::where('user_id',Auth::id())
+            ->paginate(50)
+        );
     }
 
     /**
