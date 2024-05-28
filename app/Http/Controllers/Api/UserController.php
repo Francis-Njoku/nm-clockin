@@ -20,9 +20,12 @@ use App\Mail\ResetPassword;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use App\Enum\UserAuth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UserController extends Controller
 {
+    
     /***
      * Generate Identity
      * @param No params
@@ -56,7 +59,7 @@ class UserController extends Controller
     }
     private function isValidTimezoneId($usertimezone) {
         try{
-            new DateTimeZone($usertimezone);
+            new \DateTimeZone($usertimezone);
             return true;
         }catch(Exception $e){
             return response()->json([
@@ -125,6 +128,7 @@ class UserController extends Controller
                     'phone' => $request->phone,
                     'identity' => $this->generateIdentity(),
                     'isStaff' => 1,
+                    'gmt' => $request->gmt,
                     'status' => 'approved',
                     'hasManager' => $request->hasManager,
                     'joined' => $request->joined,
@@ -141,6 +145,7 @@ class UserController extends Controller
                     'phone' => $request->phone,
                     'identity' => $this->generateIdentity(),
                     'isStaff' => 1,
+                    'gmt' => $request->gmt,
                     'status' => 'approved',
                     'hasManager' => $request->hasManager,
                     'joined' => $request->joined,
@@ -157,10 +162,17 @@ class UserController extends Controller
             // Send email to new user
             event(new Registered($user));
 
+            $accessToken = $user->createToken('access_token', [UserATokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
+            $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
+
             return response()->json([
                 'status' => true,
                 'message' => 'User Created Successfully',
-                'token' => $user->createToken("API TOKEN")->plainTextToken
+                //'token' => $user->createToken("API TOKEN")->plainTextToken,
+                'token' => $accessToken->plainTextToken,
+                'refresh_token' => $refreshToken->plainTextToken,
+                'group_id' => $group_id,
+                'gmt' => Auth::user()->gmt
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -208,12 +220,44 @@ class UserController extends Controller
                 $group_id = $group->group_id;
             }
 
+
+
+
+
+            $credentials = $request->only('email', 'password');
+
+            if (!$token = Auth::guard('api')->attempt($credentials)) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            $user = Auth::guard('api')->user();
+            $refreshToken = JWTAuth::setToken($token)->refresh();
+            
+            return response()->json([
+                'token' => $token,
+                'refresh_token' => $refreshToken,
+                'group_id' => $group_id,
+                'identity' => Auth::user()->identity
+                //'user' => $user
+            ], 200);
+
+
+
+
+            /*
+            $accessToken = $user->createToken('access_token', [TokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
+            $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
+
             return response()->json([
                 'status' => true,
                 'message' => 'User Logged In Successfully',
-                'token' => $user->createToken("API TOKEN")->plainTextToken,
-                'group_id' => $group_id
+                //'token' => $user->createToken("API TOKEN")->plainTextToken,
+                'token' => $accessToken->plainTextToken,
+                'refresh_token' => $refreshToken->plainTextToken,
+                'group_id' => $group_id,
+                'gmt' => Auth::user()->gmt
             ], 200);
+            */
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
