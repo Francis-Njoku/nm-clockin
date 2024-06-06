@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Enum\UserAuth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -189,81 +190,77 @@ class UserController extends Controller
      */
     public function loginUser(Request $request)
     {
-        try {
-            $validateUser = Validator::make(
-                $request->all(),
-                [
-                    'email' => 'required|email',
-                    'password' => 'required'
-                ]
-            );
+        /*
+        $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
+        $credentials = $request->only('email', 'password');
+        $token =  Auth::guard('api')->attempt($credentials); //
+        $token2 = Auth::attempt($credentials);
+        $refreshToken = JWTAuth::refresh($token2);
 
-            if ($validateUser->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'validation error',
-                    'errors' => $validateUser->errors()
-                ], 401);
-            }
-
-            if (!Auth::attempt($request->only(['email', 'password']))) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Email & Password does not match with our record.',
-                ], 401);
-            }
-
-            $user = User::where('email', $request->email)->first();
-            $getGroup = UserGroup::where('user_id',Auth::id())->get();
-            foreach ($getGroup as $group)
-            {
-                $group_id = $group->group_id;
-            }
-
-
-
-
-
-            $credentials = $request->only('email', 'password');
-
-            if (!$token = Auth::guard('api')->attempt($credentials)) {
-                return response()->json(['error' => 'Unauthorized'], 401);
-            }
-
-            $user = Auth::guard('api')->user();
-            $refreshToken = JWTAuth::setToken($token)->refresh();
-            
+        if (!$token) {
             return response()->json([
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $user = Auth::user()->gmt;
+        return response()->json([
+            'user' => Auth::user()->created_at,
+            'authorization' => [
                 'token' => $token,
                 'refresh_token' => $refreshToken,
-                'group_id' => $group_id,
-                'identity' => Auth::user()->identity
-                //'user' => $user
-            ], 200);
+                'type' => 'bearer',
+            ]
+        ]);
+        */
+        $credentials = $request->only('email', 'password');
 
-
-
-
-            /*
-            $accessToken = $user->createToken('access_token', [TokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
-            $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
-
-            return response()->json([
-                'status' => true,
-                'message' => 'User Logged In Successfully',
-                //'token' => $user->createToken("API TOKEN")->plainTextToken,
-                'token' => $accessToken->plainTextToken,
-                'refresh_token' => $refreshToken->plainTextToken,
-                'group_id' => $group_id,
-                'gmt' => Auth::user()->gmt
-            ], 200);
-            */
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
+        try {
+            if (! $token = JWTAuth::attempt($credentials)) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+                
+            }
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Could not create token'], 500);
         }
+
+        $group = UserGroup::where('user_id', Auth::id())->get();
+
+        foreach($group as $groups)
+        {
+            $group_id = $groups->group_id;
+        }
+        return response()->json([
+            'token' => $token,
+            'refresh_token' => $this->createRefreshToken($token),
+            'group_id' => $group_id
+        ]);
+
+    }
+
+    public function refresh()
+    {
+        try {
+            $token = JWTAuth::getToken();
+            if (!$token) {
+                return response()->json(['error' => 'Token not provided'], 401);
+            }
+            $newToken = JWTAuth::refresh($token);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Could not refresh token'], 500);
+        }
+
+        return response()->json(['token' => $newToken]);
+    }
+
+    private function createRefreshToken($token)
+    {
+        // Here you can store the refresh token in the database or another secure storage
+        // For simplicity, we'll return the same token as the refresh token
+        return $token;
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Http\Resources\UserAttendanceResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 
 
 class UserAttendanceController extends Controller
@@ -135,6 +136,33 @@ class UserAttendanceController extends Controller
             'status' => true,
             'message' => 'User clocked successfully',
         ], 200);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Attendance  $attendance
+     * @return \Illuminate\Http\Response
+     */
+    public function attendanceStatus()
+    {
+        // Get the current date in the specified timezone
+        $today = Carbon::now(Auth::user()->gmt)->startOfDay();
+        $tomorrow = $today->copy()->addDay();
+
+        if(!UserAttendance::where('user_id', Auth::id())->exists() || !UserAttendance::whereBetween('created_at', [$today, $tomorrow])->where('user_id', Auth::id())->exists() || UserAttendance::whereBetween('created_at', [$today, $tomorrow])->where('user_id', Auth::id())->where('attendance_id', '2')->latest()->first())
+        {
+            return response()->json([
+                'clock' => 'clock in',
+                'gmt' => Auth::user()->gmt
+                //'user' => $user
+            ], 200);
+        }else{
+            return response()->json([
+                'clock' => 'clock out',
+                'gmt' => Auth::user()->gmt
+            ], 200);
+        }
     }
 
     /**

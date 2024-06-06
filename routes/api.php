@@ -25,12 +25,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::get('/auth/list-users', [UserController::class, 'listUsers']);
-
+Route::post('/auth/refresh', [UserController::class, 'refresh']);
 Route::post('/auth/register', [UserController::class, 'createUser']);
 Route::post('/auth/logout', [UserController::class, 'logout']);
 Route::post('/auth/forgot', [UserController::class, 'forgot']);
 Route::post('/auth/reset', [UserController::class, 'reset']);
-Route::match(['get', 'post'], '/auth/login', [UserController::class, 'loginUser'])->name('login');
+//Route::match(['get', 'post'], '/auth/login', [UserController::class, 'loginUser'])->name('login');
+Route::post('/auth/login', [UserController::class, 'loginUser']);
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
@@ -64,17 +65,34 @@ Route::post('/group', [EventController::class, 'index']);
 Route::get('/attendance/{attendance}', [AttendanceController::class, 'show']);
 Route::get('/attendance/', [AttendanceController::class, 'index']);
 
-Route::group(['middleware' => ['auth:sanctum']], function () {
+Route::group(['middleware' => ['auth.jwt']], function () {
     Route::post('/event/new/', [EventController::class, 'store']);
     Route::post('/event/image/new/{id}', [EventController::class, 'storeImage']);
     Route::post('/event/{slug}', [BookingController::class, 'store']);
     Route::get('/u/{name}/', [BookingController::class, 'index']);
     Route::get('/b/{identity}/', [BookingController::class, 'show']);
     Route::post('/punch/', [UserAttendanceController::class, 'store']);
-    Route::get('/user/attendance/', [UserAttendanceController::class, 'index']);
+    //Route::get('/user/attendance/', [UserAttendanceController::class, 'index']);
 
+});
+
+Route::group(['middleware' => ['auth.jwt']], function () {
+    Route::get('/user/clock/status/', [UserAttendanceController::class, 'attendanceStatus']);
+
+});
+
+Route::middleware('auth.jwt')->group(function () {
+    Route::get('/details', function (Request $request) {
+        return response()->json(['user' => $request->user()]);
+    });
 });
 
 Route::group(['as'=>'admin','prefix' => 'admin','namespace'=>'admin','middleware'=>['auth:sanctum','admin']], function () {
     Route::post('/log/users/', [UserAttendanceController::class, 'listAll'])->name('listAll');
 });
+
+Route::get('public', function () {
+    return response()->json(['message' => 'This is a public endpoint.']);
+});
+
+Route::middleware('auth.jwt')->get('private', [UserAttendanceController::class, 'index']);
