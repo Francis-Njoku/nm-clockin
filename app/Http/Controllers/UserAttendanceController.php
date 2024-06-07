@@ -150,18 +150,44 @@ class UserAttendanceController extends Controller
         $today = Carbon::now(Auth::user()->gmt)->startOfDay();
         $tomorrow = $today->copy()->addDay();
 
-        if(!UserAttendance::where('user_id', Auth::id())->exists() || !UserAttendance::whereBetween('created_at', [$today, $tomorrow])->where('user_id', Auth::id())->exists() || UserAttendance::whereBetween('created_at', [$today, $tomorrow])->where('user_id', Auth::id())->where('attendance_id', '2')->latest()->first())
+        //print_r(UserAttendance::where('user_id', Auth::id())->where('attendance_id', '2')->whereBetween('created_at', [$today, $tomorrow])->latest()->first());
+
+        if(!UserAttendance::where('user_id', Auth::id())->exists())
         {
             return response()->json([
-                'clock' => 'clock in',
+                'clock' => 'clock in 1',
                 'gmt' => Auth::user()->gmt
                 //'user' => $user
             ], 200);
-        }else{
+        }elseif(!UserAttendance::whereBetween('created_at', [$today, $tomorrow])->where('user_id', Auth::id())->exists() )
+        {
             return response()->json([
-                'clock' => 'clock out',
+                'clock' => 'clock in 2',
                 'gmt' => Auth::user()->gmt
+                //'user' => $user
             ], 200);
+        }
+        else{
+            $getQuery = UserAttendance::where('user_id', Auth::id())->whereBetween('created_at', [$today, $tomorrow])->latest()->first()->get();
+            foreach($getQuery as $lat)
+            {
+                $attendance_id = $lat->attendance_id;
+            }
+            if($attendance_id == '1')
+            {
+                return response()->json([
+                    'clock' => 'clock out',
+                    'gmt' => Auth::user()->gmt
+                    //'user' => $user
+                ], 200);
+            }
+            else{
+                return response()->json([
+                    'clock' => 'clock in',
+                    'gmt' => Auth::user()->gmt
+                    //'user' => $user
+                ], 200);
+            }
         }
     }
 
