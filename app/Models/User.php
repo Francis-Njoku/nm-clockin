@@ -31,7 +31,8 @@ class User extends Authenticatable implements JWTSubject
         'joined',
         'manager_id',
         'status',
-        'gmt'
+        'gmt',
+        'department_id'
     ];
 
     public function getJWTIdentifier()

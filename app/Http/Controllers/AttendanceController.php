@@ -49,6 +49,17 @@ class AttendanceController extends Controller
      * @param  \App\Models\Attendance  $attendance
      * @return \Illuminate\Http\Response
      */
+    public function attendanceStatus()
+    {
+        
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Attendance  $attendance
+     * @return \Illuminate\Http\Response
+     */
     public function show(Attendance $attendance)
     {
         return new AttendanceResource($attendance);

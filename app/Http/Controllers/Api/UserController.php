@@ -101,6 +101,7 @@ class UserController extends Controller
                     'firstName' => '',
                     'lastName' => '',
                     'phone' => '',
+                    'department_id' => '',
                     'joined' => 'required',
                     'hasManager' => '',
                     'gmt' => 'required',
@@ -127,6 +128,7 @@ class UserController extends Controller
                     'firstName' => $request->firstname,
                     'lastName' => $request->lastname,
                     'phone' => $request->phone,
+                    'department_id' => $request->department_id,
                     'identity' => $this->generateIdentity(),
                     'isStaff' => 1,
                     'gmt' => $request->gmt,
@@ -148,6 +150,7 @@ class UserController extends Controller
                     'isStaff' => 1,
                     'gmt' => $request->gmt,
                     'status' => 'approved',
+                    'department_id' => $request->department_id,
                     'hasManager' => $request->hasManager,
                     'joined' => $request->joined,
                     'password' => Hash::make($request->password)
@@ -163,17 +166,17 @@ class UserController extends Controller
             // Send email to new user
             event(new Registered($user));
 
-            $accessToken = $user->createToken('access_token', [UserATokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
-            $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
+            //$accessToken = $user->createToken('access_token', [UserATokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
+            //$refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
 
             return response()->json([
                 'status' => true,
                 'message' => 'User Created Successfully',
                 //'token' => $user->createToken("API TOKEN")->plainTextToken,
-                'token' => $accessToken->plainTextToken,
-                'refresh_token' => $refreshToken->plainTextToken,
-                'group_id' => $group_id,
-                'gmt' => Auth::user()->gmt
+                //'token' => $accessToken->plainTextToken,
+                //'refresh_token' => $refreshToken->plainTextToken,
+                //'group_id' => $group_id,
+                //'gmt' => Auth::user()->gmt
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -418,6 +421,19 @@ class UserController extends Controller
         }*/
         return UserResource::collection(User::paginate(10));
     }
+
+    /**
+     * Display the user profile.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+
+     public function profile()
+     {
+        //$query = User::where('id', Auth::id())->get();
+        return new UserResource(User::where('id', Auth::user()->id)->first());
+     }
 
     
 }

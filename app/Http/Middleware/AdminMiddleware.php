@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\UserGroup;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMiddleware
 {
@@ -18,7 +19,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && UserGroup::where('user_id', Auth::id())->where('group_id', '2')->exist()) {
+        if (Auth::check() && UserGroup::where('user_id', Auth::id())->where('group_id', '2')->exists()) {
             return $next($request);
         } else {
             return response()->json([

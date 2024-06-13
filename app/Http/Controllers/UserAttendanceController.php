@@ -155,14 +155,14 @@ class UserAttendanceController extends Controller
         if(!UserAttendance::where('user_id', Auth::id())->exists())
         {
             return response()->json([
-                'clock' => 'clock in 1',
+                'clock' => 'clock in',
                 'gmt' => Auth::user()->gmt
                 //'user' => $user
             ], 200);
         }elseif(!UserAttendance::whereBetween('created_at', [$today, $tomorrow])->where('user_id', Auth::id())->exists() )
         {
             return response()->json([
-                'clock' => 'clock in 2',
+                'clock' => 'clock in',
                 'gmt' => Auth::user()->gmt
                 //'user' => $user
             ], 200);

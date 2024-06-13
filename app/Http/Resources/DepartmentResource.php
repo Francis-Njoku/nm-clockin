@@ -15,6 +15,7 @@ class DepartmentResource extends JsonResource
     public function toArray($request)
     {
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'status' => $this->status,
             'created_at' => (new \DateTime($this->created_at))->format('Y-m-d H:i:s'),

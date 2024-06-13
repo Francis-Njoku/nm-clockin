@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\UserAttendanceController;
@@ -24,7 +25,6 @@ use App\Http\Controllers\Api\UserController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/auth/list-users', [UserController::class, 'listUsers']);
 Route::post('/auth/refresh', [UserController::class, 'refresh']);
 Route::post('/auth/register', [UserController::class, 'createUser']);
 Route::post('/auth/logout', [UserController::class, 'logout']);
@@ -64,6 +64,8 @@ Route::get('/event/{slug}', [EventController::class, 'show']);
 Route::post('/group', [EventController::class, 'index']);
 Route::get('/attendance/{attendance}', [AttendanceController::class, 'show']);
 Route::get('/attendance/', [AttendanceController::class, 'index']);
+Route::get('/department/{department}', [DepartmentController::class, 'show']);
+Route::get('/department/', [DepartmentController::class, 'index']);
 
 Route::group(['middleware' => ['auth.jwt']], function () {
     Route::post('/event/new/', [EventController::class, 'store']);
@@ -78,6 +80,12 @@ Route::group(['middleware' => ['auth.jwt']], function () {
 
 Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/user/clock/status/', [UserAttendanceController::class, 'attendanceStatus']);
+    Route::get('/auth/profile/', [UserController::class, 'profile']);
+
+});
+
+Route::group(['middleware' => ['auth.jwt','admin' ]], function () {
+    Route::get('/auth/list-users/', [UserController::class, 'listUsers']);
 
 });
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Department;
 use App\Models\User;
 use App\Http\Requests\StoreDepartmentRequest;
@@ -15,7 +16,7 @@ class DepartmentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $filter = $request->get('s');
         if($filter)
@@ -49,7 +50,7 @@ class DepartmentController extends Controller
      */
     public function show(Department $department)
     {
-        return new DepartmentResource($attendance);
+        return new DepartmentResource($department);
     }
 
     /**
