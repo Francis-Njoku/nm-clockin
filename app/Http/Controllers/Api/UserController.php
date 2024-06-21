@@ -26,6 +26,27 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+    /***
+     * Generate Identity
+     * @param No params
+     * @return unique Identity
+     */
+
+    private function getID($name)
+    {
+        // Query the database to find the user by email
+        $user = User::where('name', $name)->first();
+
+        // Check if the user exists
+        if ($user) {
+            // Return the user ID
+            return $user->id; //response()->json(['id' => $user->id]);
+        } else {
+            // Return a not found response
+            return response()->json(['message' => 'User not exist'], 404);
+        }
+    }
+    
     
     /***
      * Generate Identity
@@ -135,7 +156,7 @@ class UserController extends Controller
                     'status' => 'approved',
                     'hasManager' => $request->hasManager,
                     'joined' => $request->joined,
-                    'manager_id' => $request->manager_id,
+                    'manager_id' => $this->getID($request->manager_id),
                     'password' => Hash::make($request->password)
                 ]);
             }
@@ -435,5 +456,99 @@ class UserController extends Controller
         return new UserResource(User::where('id', Auth::user()->id)->first());
      }
 
+     /**
+     * Create User
+     * @param Request $request
+     * @return User
+     */
+    public function adminCreateUser()
+    {
+        try {
+            //Validated
+            $validateUser = Validator::make(
+                $request->all(),
+                [
+                    'firstName' => '',
+                    'lastName' => '',
+                    'phone' => '',
+                    'department_id' => '',
+                    'joined' => 'required',
+                    'hasManager' => '',
+                    'gmt' => 'required',
+                    'email' => 'required|email|unique:users,email',
+                    'password' => 'required'
+                ]
+            );
+
+            if ($validateUser->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validateUser->errors()
+                ], 401);
+            }
+
+            $this->isValidTimezoneId($request->gmt);
+
+            if($request->manager_id)
+            {
+                $user = User::create([
+                    'name' => $this->generateUser(),
+                    'email' => $request->email,
+                    'firstName' => $request->firstname,
+                    'lastName' => $request->lastname,
+                    'phone' => $request->phone,
+                    'department_id' => $request->department_id,
+                    'identity' => $this->generateIdentity(),
+                    'isStaff' => 1,
+                    'gmt' => $request->gmt,
+                    'status' => 'approved',
+                    'hasManager' => $request->hasManager,
+                    'joined' => $request->joined,
+                    'manager_id' => $this->getID($request->manager_id),
+                    'password' => Hash::make($request->password)
+                ]);
+            }
+            else{
+                $user = User::create([
+                    'name' => $this->generateUser(),
+                    'email' => $request->email,
+                    'firstName' => $request->firstname,
+                    'lastName' => $request->lastname,
+                    'phone' => $request->phone,
+                    'identity' => $this->generateIdentity(),
+                    'isStaff' => 1,
+                    'gmt' => $request->gmt,
+                    'status' => 'approved',
+                    'department_id' => $request->department_id,
+                    'hasManager' => $request->hasManager,
+                    'joined' => $request->joined,
+                    'password' => Hash::make($request->password)
+                ]);
+            }
+
+
+            $userGroup = UserGroup::create([
+                'user_id' => $user->id,
+                'group_id' => '1'
+            ]);
+
+            // Send email to new user
+            event(new Registered($user));
+
+            //$accessToken = $user->createToken('access_token', [UserATokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
+            //$refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User Created Successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
     
 }

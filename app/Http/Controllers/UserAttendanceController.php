@@ -55,6 +55,7 @@ class UserAttendanceController extends Controller
     {
         return UserAttendanceResource::collection(
             UserAttendance::where('user_id',Auth::id())
+            ->orderBy('clock', 'desc')
             ->paginate(50)
         );
     }
@@ -224,4 +225,16 @@ class UserAttendanceController extends Controller
     {
         //
     }
+
+    /**
+     * List attendance by employee.
+     *
+     * @param  \App\Models\UserAttendance  $userAttendance
+     * @return \Illuminate\Http\Response
+     */
+
+     public function attendanceHistory()
+     {
+        
+     }
 }

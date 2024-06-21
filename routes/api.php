@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\UserController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::get('/auth/list-users/', [UserController::class, 'listUsers']);
 Route::post('/auth/refresh', [UserController::class, 'refresh']);
 Route::post('/auth/register', [UserController::class, 'createUser']);
 Route::post('/auth/logout', [UserController::class, 'logout']);
@@ -81,11 +82,13 @@ Route::group(['middleware' => ['auth.jwt']], function () {
 Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/user/clock/status/', [UserAttendanceController::class, 'attendanceStatus']);
     Route::get('/auth/profile/', [UserController::class, 'profile']);
+    Route::get('/user/attendance/', [UserAttendanceController::class, 'index']);
 
 });
 
 Route::group(['middleware' => ['auth.jwt','admin' ]], function () {
-    Route::get('/auth/list-users/', [UserController::class, 'listUsers']);
+    Route::post('/admin/create/user/', [UserController::class, 'adminCreateUser']);
+
 
 });
 
