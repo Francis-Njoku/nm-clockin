@@ -83,11 +83,16 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/user/clock/status/', [UserAttendanceController::class, 'attendanceStatus']);
     Route::get('/auth/profile/', [UserController::class, 'profile']);
     Route::get('/user/attendance/', [UserAttendanceController::class, 'index']);
+    Route::get('/manager/attendance/', [UserAttendanceController::class, 'userManagerAttendanceList']);
+    Route::post('/auth/signout/', [UserController::class, 'signout']);
+
 
 });
 
 Route::group(['middleware' => ['auth.jwt','admin' ]], function () {
     Route::post('/admin/create/user/', [UserController::class, 'adminCreateUser']);
+    Route::get('/admin/user/attendance/', [UserAttendanceController::class, 'adminAttendanceHistory']);
+
 
 
 });

@@ -296,6 +296,19 @@ class UserController extends Controller
 
         return response()->success([], 'logged out', 200);
     }
+
+    /**
+     * @return JsonResponse
+     */
+    public function signout(Request $request)
+    {
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+            return response()->json(['message' => 'Successfully logged out']);
+        } catch (JWTException $exception) {
+            return response()->json(['error' => 'Failed to logout, please try again.'], 500);
+        }
+    }
  
     /**
      * @param ForgotPasswordRequest $request

@@ -10,6 +10,7 @@ use App\Http\Resources\UserAttendanceResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Carbon\Carbon;
 
 
@@ -233,8 +234,62 @@ class UserAttendanceController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     public function attendanceHistory()
+     public function adminAttendanceHistory()
      {
-        
+        /*return UserAttendanceResource::collection(
+            UserAttendance::orderBy('clock', 'desc')
+            ->paginate(50)
+        );*/
+
+        // Retrieve and sort the data
+        $userAttendances = UserAttendance::orderByRaw('DATE(clock) desc')->get();
+
+        // Sort the collection by firstName safely
+        $sortedUserAttendances = $userAttendances->sortBy(function ($item) {
+            // Check if user_id is an array and contains the expected data
+            if (is_array($item->user_id) && isset($item->user_id[0]['firstName'])) {
+                return $item->user_id[0]['firstName'];
+            }
+            // Return a default value if not
+            return '';
+        })->values();
+
+        // Manual pagination
+        $perPage = 50;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $sortedUserAttendances->slice(($currentPage - 1) * $perPage, $perPage)->all();
+        $paginatedItems = new LengthAwarePaginator($currentItems, $sortedUserAttendances->count(), $perPage, $currentPage, [
+            'path' => LengthAwarePaginator::resolveCurrentPath()
+        ]);
+
+        // Return the resource collection
+        return UserAttendanceResource::collection($paginatedItems);
      }
+
+     /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function userManagerAttendanceList()
+    {
+        return UserAttendanceResource::collection(
+            UserAttendance::join('users', 'user_attendances.user_id', '=', 'users.id')
+        ->where('users.manager_id', Auth::id()) // Adjust the column and value as needed
+        ->select(
+            'user_attendances.id',
+            'user_attendances.user_id',
+            'user_attendances.clock', // Include the original clock
+            DB::raw('DATE(user_attendances.clock) as clock_date'), // Extract the date part
+            'user_attendances.ipAddress',
+            'user_attendances.comment',
+            //'user_attendances.attended',
+            'users.firstName'
+        )
+        ->orderBy('clock_date', 'desc') // Order by extracted date in descending order
+        ->orderBy('users.firstName', 'desc') // Order by extracted date in descending order
+        ->groupBy('users.firstName', 'user_attendances.id', 'user_attendances.clock', 'user_attendances.user_id', 'user_attendances.ipAddress', 'user_attendances.comment') // Group by necessary columns
+        ->paginate(50)
+        );
+    }
 }
