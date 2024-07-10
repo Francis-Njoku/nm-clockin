@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 use DateTime;
 use App\Models\UserAttendance;
 use App\Models\User;
+use App\Models\UserGroup;
 use App\Http\Requests\StoreUserAttendanceRequest;
 use App\Http\Requests\UpdateUserAttendanceRequest;
 use App\Http\Resources\UserAttendanceResource;
+use App\Http\Resources\ManagerAttendanceResource;
+use App\Http\Requests\StoreAttendanceRequest;
+use App\Helpers\NotificationHelper;
+use App\Events\NotificationDefaultEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -47,6 +52,9 @@ class UserAttendanceController extends Controller
         //here you can test it
         return $nndatetime;
     }
+    // Send notification to individual
+    
+    // Send notification to admin
     /**
      * Display a listing of the resource.
      *
@@ -273,8 +281,9 @@ class UserAttendanceController extends Controller
      */
     public function userManagerAttendanceList()
     {
-        return UserAttendanceResource::collection(
+        return ManagerAttendanceResource::collection(
             UserAttendance::join('users', 'user_attendances.user_id', '=', 'users.id')
+            ->join('attendances', 'user_attendances.attendance_id', '=', 'attendances.id') // Adjust the join condition if necessary
         ->where('users.manager_id', Auth::id()) // Adjust the column and value as needed
         ->select(
             'user_attendances.id',
@@ -284,12 +293,109 @@ class UserAttendanceController extends Controller
             'user_attendances.ipAddress',
             'user_attendances.comment',
             //'user_attendances.attended',
-            'users.firstName'
+            'users.firstName',
+            'users.lastName',
+            'attendances.name as attendance_name', // Select attendance name
+            'attendances.status as attendance_status', // Select attendance status
+            'attendances.created_at as attendance_created_at', // Select attendance created_at
+            'attendances.updated_at as attendance_updated_at' // Select attendance updated_at
         )
         ->orderBy('clock_date', 'desc') // Order by extracted date in descending order
         ->orderBy('users.firstName', 'desc') // Order by extracted date in descending order
-        ->groupBy('users.firstName', 'user_attendances.id', 'user_attendances.clock', 'user_attendances.user_id', 'user_attendances.ipAddress', 'user_attendances.comment') // Group by necessary columns
+        ->groupBy('users.firstName', 'user_attendances.id', 'user_attendances.clock', 
+        'user_attendances.user_id', 'user_attendances.ipAddress', 
+        'user_attendances.comment',
+        'attendances.name',
+        'users.firstName',
+            'users.lastName',
+            'attendances.status',
+            'attendances.created_at',
+            'attendances.updated_at') // Group by necessary columns
         ->paginate(50)
         );
     }
+
+    /**
+     * modify clock in.
+     *
+     * @param  \App\Http\Requests\StoreUserAttendanceRequest  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function userRegisterClock(StoreAttendanceRequest $request)
+    {
+        $data = $request->validated();
+
+        // enter clockin
+        $clockin = UserAttendance::create([
+            'user_id' => Auth::id(),
+            'attendance_id' => '1',
+            'clock' => $data['clockIn'],
+            'status' => 'pending',
+            'comment' => $data['comment'],
+            'ipAddress' => \Request::ip()
+        ]);
+
+        //enter clockout
+        $clockout = UserAttendance::create([
+            'user_id' => Auth::id(),
+            'attendance_id' => '2',
+            'clock' => $data['clockOut'],
+            'status' => 'pending',
+            'comment' => $data['comment'],
+            'ipAddress' => \Request::ip()
+        ]);
+        NotificationDefaultEvent::dispatch($data['comment']);
+        return response()->json([
+            'status' => 'Successful',
+        ], 201);
+
+
+        // Get the currently authenticated user
+        $user = Auth::user();
+        //echo $user->manager_id;
+        //echo "chima";
+        echo $user->name;
+
+        // Check if the manager ID is empty
+        if (!empty($user->manager_id)) {
+            $message = $user->firstName." ".$user->lastName." created a clockin";
+            $userId = $user->name;
+            $messageType = "clock";
+            $result = NotificationHelper::single($message, $messageType, $userId);
+            //event(new NotificationEvent($message, $messageType, $userId));
+            return response()->json([
+                'status' => 'Successful',
+            ], 201);
+        }
+        else{
+            return response()->json([
+                'status' => 'failed',
+            ], 400);
+        }
+
+        // send notification to admin
+
+        $getAdmin = UserGroup::where('group_id', '2')
+        ->get();
+
+        foreach($getAdmin as $admin)
+        {
+            $userAdmin = User::find($admin->id);
+            // Check if user exists
+            if ($userAdmin) {
+                // Get the user's first name
+                //$firstName = $user->firstName;
+                $message = $user->firstName." ".$user->lastName." created a clockin";
+                $userId = $userAdmin->name;
+                $messageType = "clock";
+                $result = NotificationHelper::single($message, $messageType, $userId);
+                //return response()->json(['first_name' => $firstName]);
+            }
+        }
+        
+        return response()->json([
+            'success' => 'Successful',
+        ], 201);
+    }
+
 }

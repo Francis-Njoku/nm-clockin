@@ -85,7 +85,7 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/user/attendance/', [UserAttendanceController::class, 'index']);
     Route::get('/manager/attendance/', [UserAttendanceController::class, 'userManagerAttendanceList']);
     Route::post('/auth/signout/', [UserController::class, 'signout']);
-
+    Route::post('/user/clock/register/', [UserAttendanceController::class, 'userRegisterClock']);
 
 });
 
