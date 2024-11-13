@@ -446,6 +446,26 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+
+    /**
+     * @OA\Get(
+     *     path="/api/auth/list-users",
+     *     summary="Get list of users",
+     *     tags={"User"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="A list of users",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Users not found"
+     *     )
+     * )
+     */
     public function listUsers(Request $request)
     {
         /*
