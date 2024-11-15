@@ -18,7 +18,5 @@ class LeaveUser extends Model
     public function leave()
     {
         return $this->belongsTo(Leave::class);
-    }
-
-    
+    }    
 }
