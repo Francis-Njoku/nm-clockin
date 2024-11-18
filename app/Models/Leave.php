@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Leave extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'name', 'is_approved', 'approved_by', 'start', 'end', 'status', 'leave_type'];
+    protected $fillable = ['user_id', 'name', 'is_approved', 'approved_by', 'start', 'end', 'status', 'leave_type', 'reason', 'file_attachment'];
 
     /**
      * Relationship to get the user who requested the leave.

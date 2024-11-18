@@ -17,6 +17,7 @@ class StoreLeaveRequest extends FormRequest
     }
     protected function prepareForValidation()
     {
+        \Log::info('Incoming request data:', $this->all());
         $this->merge([
             'user_id' => $this->user()->id
         ]);
@@ -36,6 +37,9 @@ class StoreLeaveRequest extends FormRequest
             'end' => 'required|date|after_or_equal:start',
             'status' => 'required|string|in:pending,approved,rejected',
             'leave_type' => 'required|string|max:50',
+            'user_recipients' => 'nullable|string', // Validate as an optional string
+            'reason' => 'nullable|string|max:1000', // Add validation for reason
+            'file_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Add validation for file attachment
         ];
     }
 
@@ -54,6 +58,11 @@ class StoreLeaveRequest extends FormRequest
             'leave_type.required' => 'The leave type is required.',
             'start.before_or_equal' => 'The start date must be before or equal to the end date.',
             'end.after_or_equal' => 'The end date must be after or equal to the start date.',
+            'user_recipients.string' => 'The user recipients field must be a valid string.',
+            'reason.max' => 'The reason must not exceed 1000 characters.',
+            'file_attachment.file' => 'The attachment must be a valid file.',
+            'file_attachment.mimes' => 'The file must be a type of jpg, jpeg, png, or pdf.',
+            'file_attachment.max' => 'The file size must not exceed 2MB.',
         ];
     }
 

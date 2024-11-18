@@ -26,6 +26,8 @@ class LeaveResource extends JsonResource
             'is_approved' => $this->is_approved,
             'start' => $this->start,
             'end' => $this->end,
+            'reason' => $this->reason,
+            'file_attachment' => $this->file_attachment ? asset('storage/' . $this->file_attachment) : null, // Include full URL to the file
             'status' => $this->status,
             'created_at' => (new \DateTime($this->created_at))->format('Y-m-d H:i:s'),
             'updated_at' => (new \DateTime($this->updated_at))->format('Y-m-d H:i:s'),

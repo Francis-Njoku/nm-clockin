@@ -9,6 +9,9 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\UserAttendanceController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\LeaveController;
+use App\Http\Resources\LeaveResource;
+
 
 
 /*
@@ -86,7 +89,7 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/manager/attendance/', [UserAttendanceController::class, 'userManagerAttendanceList']);
     Route::post('/auth/signout/', [UserController::class, 'signout']);
     Route::post('/user/clock/register/', [UserAttendanceController::class, 'userRegisterClock']);
-
+    Route::post('/leave/apply/', [LeaveController::class, 'store'])->withoutMiddleware(['auth', 'csrf']);
 });
 
 Route::group(['middleware' => ['auth.jwt','admin' ]], function () {
