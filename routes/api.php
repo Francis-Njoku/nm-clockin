@@ -95,13 +95,17 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/leave/user/', [LeaveController::class, 'indexSingle']);
     Route::get('/leave/user/', [LeaveController::class, 'indexSingle']);
     Route::get('/leaves/{leave}/', [LeaveController::class, 'show']);
-
+    Route::put('/leaves/{leave}', [LeaveController::class, 'update']);
+    Route::delete('/leaves/{leave}', [LeaveController::class, 'destroy']);
+    Route::post('/leaves/{leave}/comments', [LeaveController::class, 'storeLeaveComment']);
 });
 
 Route::group(['middleware' => ['auth.jwt','admin' ]], function () {
     Route::post('/admin/create/user/', [UserController::class, 'adminCreateUser']);
     Route::get('/admin/user/attendance/', [UserAttendanceController::class, 'adminAttendanceHistory']);
-
+    Route::put('/admin/leaves/{leave}', [LeaveController::class, 'updateAdmin']);
+    Route::put('/admin/leaves/{leave}', [LeaveController::class, 'destroyAdmin']);
+    Route::post('/admin/leaves/{leave}/comments', [LeaveController::class, 'storeLeaveComment']);
 
 
 });

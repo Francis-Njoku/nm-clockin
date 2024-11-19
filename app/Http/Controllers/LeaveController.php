@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Leave;
 use App\Models\LeaveUser;
+use App\Models\LeaveComment;
 use App\Http\Requests\StoreLeaveRequest;
 use App\Http\Requests\UpdateLeaveRequest;
 use App\Http\Resources\LeaveResource;
+use App\Http\Requests\StoreLeaveCommentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -266,6 +268,92 @@ class LeaveController extends Controller
      */
     public function destroy(Leave $leave)
     {
-        //
+        // Get the authenticated user's ID
+        $userId = auth()->id();
+
+        // Check if the authenticated user is the owner of the leave
+        if ($leave->user_id !== $userId) {
+            return response()->json(['error' => 'Unauthorized access.'], 403);
+        }
+
+        // Delete the leave record
+        $leave->delete();
+
+        // Return a success response
+        return response()->json(['message' => 'Leave deleted successfully.'], 200);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Leave  $leave
+     * @return \Illuminate\Http\Response
+     */
+    public function destroyAdmin(Leave $leave)
+    {
+        // Delete the leave record
+        $leave->delete();
+
+        // Return a success response
+        return response()->json(['message' => 'Leave deleted successfully.'], 200);
+    }
+
+    public function storeLeaveComment(StoreLeaveCommentRequest $request, Leave $leave)
+    {
+        // Get the authenticated user
+        $user = auth()->user();
+
+        // Validate the user's association with the leave_id in the LeaveUser model
+        $isUserTiedToLeave = LeaveUser::where('user_id', $user->id)
+            ->where('leave_id', $leave->id)
+            ->exists();
+
+        // Validate the user's association with the leave_id in the LeaveUser model
+        $isUserLeaveOwner = Leave::where('user_id', $user->id)
+        ->where('leave_id', $leave->id)
+        ->exists();
+
+
+        if (!$isUserTiedToLeave || !$isUserLeaveOwner) {
+            return response()->json([
+                'message' => 'You are not authorized to comment on this leave.',
+            ], 403);
+        }
+
+        // Validate the request data
+        $validatedData = $request->validated();
+
+        // Create the comment and associate it with the leave
+        $leaveComment = $leave->comments()->create([
+            'user_id' => $user->id,
+            'comment' => $validatedData['comment'],
+        ]);
+
+        // Return a success response
+        return response()->json([
+            'message' => 'Comment added successfully.',
+            'comment' => $leaveComment,
+        ], 201);
+    }
+    
+    public function storeLeaveCommentAdmin(StoreLeaveCommentRequest $request, Leave $leave)
+    {
+        // Get the authenticated user
+        $user = auth()->user();
+
+        // Validate the request data
+        $validatedData = $request->validated();
+
+        // Create the comment and associate it with the leave
+        $leaveComment = $leave->comments()->create([
+            'user_id' => $user->id,
+            'comment' => $validatedData['comment'],
+        ]);
+
+        // Return a success response
+        return response()->json([
+            'message' => 'Comment added successfully.',
+            'comment' => $leaveComment,
+        ], 201);
     }
 }
