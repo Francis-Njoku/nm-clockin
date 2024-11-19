@@ -89,7 +89,13 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/manager/attendance/', [UserAttendanceController::class, 'userManagerAttendanceList']);
     Route::post('/auth/signout/', [UserController::class, 'signout']);
     Route::post('/user/clock/register/', [UserAttendanceController::class, 'userRegisterClock']);
-    Route::post('/leave/apply/', [LeaveController::class, 'store'])->withoutMiddleware(['auth', 'csrf']);
+    Route::post('/leave/apply/', [LeaveController::class, 'store']);
+    //Route::post('/leave/apply/', [LeaveController::class, 'store'])->withoutMiddleware(['auth', 'csrf']);
+    Route::get('/leave/all/', [LeaveController::class, 'index']);
+    Route::get('/leave/user/', [LeaveController::class, 'indexSingle']);
+    Route::get('/leave/user/', [LeaveController::class, 'indexSingle']);
+    Route::get('/leaves/{leave}/', [LeaveController::class, 'show']);
+
 });
 
 Route::group(['middleware' => ['auth.jwt','admin' ]], function () {

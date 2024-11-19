@@ -8,6 +8,8 @@ use App\Models\LeaveUser;
 use App\Http\Requests\StoreLeaveRequest;
 use App\Http\Requests\UpdateLeaveRequest;
 use App\Http\Resources\LeaveResource;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LeaveController extends Controller
 {
@@ -19,14 +21,95 @@ class LeaveController extends Controller
     public function index(Request $request)
     {
         $filter = $request->get('s');
-        if ($filter)
+        $status = $request->get('status');
+        if ($filter && $status) {
+            return LeaveResource::collection(
+                Leave::where(function ($query) use ($filter) {
+                        $query->where('name', 'like', '%'.$filter.'%')
+                              ->orWhereHas('user', function ($query) use ($filter) {
+                                  $query->where('firstName', 'like', '%'.$filter.'%')
+                                        ->orWhere('lastName', 'like', '%'.$filter.'%')
+                                        ->orWhere('name', 'like', '%'.$filter.'%');
+                              });
+                    })
+                    ->where('status', 'like', '%'.$status.'%') // Ensure the status is correctly filtered
+                    ->paginate(10)
+            );
+        }
+        elseif($filter)
         {
             return LeaveResource::collection(
-                Leave::where('name', 'like', '%'.$filter.'%')
-                ->paginate(10));
+                Leave::where(function ($query) use ($filter) {
+                        $query->where('name', 'like', '%'.$filter.'%')
+                              ->orWhereHas('user', function ($query) use ($filter) {
+                                  $query->where('firstName', 'like', '%'.$filter.'%')
+                                        ->orWhere('lastName', 'like', '%'.$filter.'%')
+                                        ->orWhere('name', 'like', '%'.$filter.'%');
+                              });
+                    })->paginate(10)
+            );
+        }
+        elseif($status)
+        {
+            return LeaveResource::collection(
+                Leave::where('status', 'like', '%'.$status.'%') // Ensure the status is correctly filtered
+                    ->paginate(10)
+            );
         }
         else {
             return LeaveResource::collection(Leave::all());
+        }
+    }
+
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexSingle(Request $request)
+    {
+        $filter = $request->get('s');
+        $status = $request->get('status');
+        if ($filter && $status) {
+            return LeaveResource::collection(
+                Leave::where(function ($query) use ($filter) {
+                        $query->where('name', 'like', '%'.$filter.'%')
+                              ->orWhereHas('user', function ($query) use ($filter) {
+                                  $query->where('firstName', 'like', '%'.$filter.'%')
+                                        ->orWhere('lastName', 'like', '%'.$filter.'%')
+                                        ->orWhere('name', 'like', '%'.$filter.'%');
+                              });
+                    })
+                    ->where('status', 'like', '%'.$status.'%') // Ensure the status is correctly filtered
+                    ->where('user_id', Auth::id())
+                    ->paginate(10)
+            );
+        }
+        elseif ($filter) {
+            return LeaveResource::collection(
+                Leave::where(function ($query) use ($filter) {
+                        $query->where('name', 'like', '%'.$filter.'%')
+                              ->orWhereHas('user', function ($query) use ($filter) {
+                                  $query->where('firstName', 'like', '%'.$filter.'%')
+                                        ->orWhere('lastName', 'like', '%'.$filter.'%')
+                                        ->orWhere('name', 'like', '%'.$filter.'%');
+                              });
+                    })
+                    ->where('user_id', Auth::id())
+                    ->paginate(10)
+            );
+        }
+        elseif ($status) {
+            return LeaveResource::collection(
+                Leave::where('status', 'like', '%'.$status.'%') // Ensure the status is correctly filtered
+                    ->where('user_id', Auth::id())
+                    ->paginate(10)
+            );
+        }
+        else {
+            return LeaveResource::collection(
+                Leave::where('user_id', Auth::id()));
         }
     }
 
@@ -93,7 +176,16 @@ class LeaveController extends Controller
      */
     public function show(Leave $leave)
     {
-        //
+        // Get the authenticated user's ID
+        $userId = auth()->id();
+
+        // Check if the leave belongs to the authenticated user
+        if ($leave->user_id !== $userId) {
+            return response()->json(['error' => 'Unauthorized access.'], 403);
+        }
+
+        // If the check passes, return the leave resource
+        return new LeaveResource($leave);
     }
 
     /**
@@ -105,7 +197,65 @@ class LeaveController extends Controller
      */
     public function update(UpdateLeaveRequest $request, Leave $leave)
     {
-        //
+        // Get the authenticated user's ID
+        $userId = auth()->id();
+    
+        // Check if the authenticated user is the owner of the leave
+        if ($leave->user_id !== $userId) {
+            return response()->json(['error' => 'Unauthorized access.'], 403);
+        }
+    
+        // Validate and update the leave details
+        $validatedData = $request->validated();
+    
+        // If the request has only 'status', update the status field
+        if ($request->has('status') && count($validatedData) === 1) {
+            $leave->update(['status' => $validatedData['status']]);
+    
+            return response()->json([
+                'message' => 'Leave status updated successfully.',
+                'data' => new LeaveResource($leave),
+            ]);
+        }
+    
+        // For full updates, update all provided fields
+        $leave->update($validatedData);
+    
+        return response()->json([
+            'message' => 'Leave updated successfully.',
+            'data' => new LeaveResource($leave),
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \App\Http\Requests\UpdateLeaveRequest  $request
+     * @param  \App\Models\Leave  $leave
+     * @return \Illuminate\Http\Response
+     */
+    public function updateAdmin(UpdateLeaveRequest $request, Leave $leave)
+    {
+        // Validate and update the leave details
+        $validatedData = $request->validated();
+    
+        // If the request has only 'status', update the status field
+        if ($request->has('status') && count($validatedData) === 1) {
+            $leave->update(['status' => $validatedData['status']]);
+    
+            return response()->json([
+                'message' => 'Leave status updated successfully.',
+                'data' => new LeaveResource($leave),
+            ]);
+        }
+    
+        // For full updates, update all provided fields
+        $leave->update($validatedData);
+    
+        return response()->json([
+            'message' => 'Leave updated successfully.',
+            'data' => new LeaveResource($leave),
+        ]);
     }
 
     /**

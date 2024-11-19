@@ -25,4 +25,11 @@ class Leave extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
+    /**
+     * Relationship to get the user who approved the leave.
+     */
+    public function comments()
+    {
+        return $this->belongsTo(LeaveComment::class, 'leave_id');
+    }
 }
