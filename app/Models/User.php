@@ -73,4 +73,10 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(Department::class);
     }
+
+    // Many-to-many relationship for users (LeaveUser pivot)
+    public function leaves()
+    {
+        return $this->belongsToMany(Leave::class, 'leave_users', 'user_id', 'leave_id');
+    }
 }

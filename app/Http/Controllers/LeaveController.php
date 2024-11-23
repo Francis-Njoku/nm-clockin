@@ -116,6 +116,59 @@ class LeaveController extends Controller
     }
 
     /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexManage(Request $request)
+{
+    $filter = $request->get('s');
+    $status = $request->get('status');
+    
+    $query = Leave::query();
+
+    // Apply filter based on 's' parameter (if provided)
+    if ($filter) {
+        $query->where(function ($query) use ($filter) {
+            $query->where('name', 'like', '%'.$filter.'%')
+                  ->orWhereHas('user', function ($query) use ($filter) {
+                      $query->where('firstName', 'like', '%'.$filter.'%')
+                            ->orWhere('lastName', 'like', '%'.$filter.'%')
+                            ->orWhere('name', 'like', '%'.$filter.'%');
+                  });
+        });
+    }
+
+    // Apply filter based on 'status' parameter (if provided)
+    if ($status) {
+        $query->where('status', 'like', '%'.$status.'%');
+    }
+
+    // Check manager relationship (for manager_id in User and user_id in LeaveUser)
+    $query->where(function ($query) {
+        // Check if the authenticated user is the manager of the leave
+        $query->whereHas('user', function ($query) {
+            $query->where('manager_id', Auth::id());
+        })
+        // OR check if the authenticated user is associated with the leave through the leave_users pivot
+        ->orWhereHas('manager', function ($query) {
+            // Adjusted this part to correctly check for the user_id in the pivot table
+            $query->where('user_id', Auth::id());
+        });
+    });
+
+    // Return paginated results
+    return LeaveResource::collection(
+        $query->paginate(10)
+    );
+}
+
+
+
+
+
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StoreLeaveRequest  $request
@@ -182,13 +235,15 @@ class LeaveController extends Controller
         $userId = auth()->id();
 
         // Check if the leave belongs to the authenticated user
-        if ($leave->user_id !== $userId) {
-            return response()->json(['error' => 'Unauthorized access.'], 403);
+        if ($leave->user_id !== $userId && $leave->user->manager_id !== $userId && $leave->manager->user_id !== $userId)  {
+            return response()->json(['error' => 'Unauthorizess access.'], 403);
         }
 
         // If the check passes, return the leave resource
         return new LeaveResource($leave);
     }
+
+    
 
     /**
      * Update the specified resource in storage.
@@ -310,11 +365,11 @@ class LeaveController extends Controller
 
         // Validate the user's association with the leave_id in the LeaveUser model
         $isUserLeaveOwner = Leave::where('user_id', $user->id)
-        ->where('leave_id', $leave->id)
+        ->where('id', $leave->id)
         ->exists();
 
 
-        if (!$isUserTiedToLeave || !$isUserLeaveOwner) {
+        if (!$isUserTiedToLeave && !$isUserLeaveOwner) {
             return response()->json([
                 'message' => 'You are not authorized to comment on this leave.',
             ], 403);
@@ -326,6 +381,7 @@ class LeaveController extends Controller
         // Create the comment and associate it with the leave
         $leaveComment = $leave->comments()->create([
             'user_id' => $user->id,
+            'leave_id' => $leave->id,
             'comment' => $validatedData['comment'],
         ]);
 
@@ -347,6 +403,7 @@ class LeaveController extends Controller
         // Create the comment and associate it with the leave
         $leaveComment = $leave->comments()->create([
             'user_id' => $user->id,
+            'leave_id' => $leave->id,
             'comment' => $validatedData['comment'],
         ]);
 

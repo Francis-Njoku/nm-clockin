@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Resources\UserResource;
+use App\Http\Resources\UserBasicResource;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserGroup;
@@ -253,6 +254,8 @@ class UserController extends Controller
 
         $group = UserGroup::where('user_id', Auth::id())->get();
 
+        $manager = User::where('manager_id', Auth::id())->exists();
+
         foreach($group as $groups)
         {
             $group_id = $groups->group_id;
@@ -260,7 +263,8 @@ class UserController extends Controller
         return response()->json([
             'token' => $token,
             'refresh_token' => $this->createRefreshToken($token),
-            'group_id' => $group_id
+            'group_id' => $group_id,
+            'isManager' => $manager
         ]);
 
     }
@@ -474,6 +478,27 @@ class UserController extends Controller
             return abort(403, 'Unauthorized action.');
         }*/
         return UserResource::collection(User::paginate(10));
+    }
+
+    public function listUserBasic(Request $request)
+    {
+        /*
+        $user = $request->user();
+        if ($user->isAdmin == false) {
+            return abort(403, 'Unauthorized action.');
+        }*/
+        return UserBasicResource::collection(User::paginate(10));
+    }
+    
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Leave  $leave
+     * @return \Illuminate\Http\Response
+     */
+    public function show(User $user)
+    {       // If the check passes, return the leave resource
+        return new UserResource($user);
     }
 
     /**

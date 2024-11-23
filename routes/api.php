@@ -28,7 +28,6 @@ use App\Http\Resources\LeaveResource;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/auth/list-users/', [UserController::class, 'listUsers']);
 Route::post('/auth/refresh', [UserController::class, 'refresh']);
 Route::post('/auth/register', [UserController::class, 'createUser']);
 Route::post('/auth/logout', [UserController::class, 'logout']);
@@ -91,13 +90,13 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::post('/user/clock/register/', [UserAttendanceController::class, 'userRegisterClock']);
     Route::post('/leave/apply/', [LeaveController::class, 'store']);
     //Route::post('/leave/apply/', [LeaveController::class, 'store'])->withoutMiddleware(['auth', 'csrf']);
-    Route::get('/leave/all/', [LeaveController::class, 'index']);
     Route::get('/leave/user/', [LeaveController::class, 'indexSingle']);
-    Route::get('/leave/user/', [LeaveController::class, 'indexSingle']);
+    Route::get('/leave/manager/', [LeaveController::class, 'indexManage']);
     Route::get('/leaves/{leave}/', [LeaveController::class, 'show']);
     Route::put('/leaves/{leave}', [LeaveController::class, 'update']);
     Route::delete('/leaves/{leave}', [LeaveController::class, 'destroy']);
     Route::post('/leaves/{leave}/comments', [LeaveController::class, 'storeLeaveComment']);
+    Route::get('/auth/basic/user/details/', [UserController::class, 'listUserBasic']);
 });
 
 Route::group(['middleware' => ['auth.jwt','admin' ]], function () {
@@ -106,6 +105,10 @@ Route::group(['middleware' => ['auth.jwt','admin' ]], function () {
     Route::put('/admin/leaves/{leave}', [LeaveController::class, 'updateAdmin']);
     Route::put('/admin/leaves/{leave}', [LeaveController::class, 'destroyAdmin']);
     Route::post('/admin/leaves/{leave}/comments', [LeaveController::class, 'storeLeaveComment']);
+    Route::get('/leave/all/', [LeaveController::class, 'index']);
+    Route::get('/admin/leave/all/', [LeaveController::class, 'index']);
+    Route::get('/admin/user/{user}', [UserController::class, 'show']);
+    Route::get('/auth/list-users/', [UserController::class, 'listUsers']);
 
 
 });

@@ -32,4 +32,9 @@ class Leave extends Model
     {
         return $this->belongsTo(LeaveComment::class, 'leave_id');
     }
+
+    public function manager()
+    {
+        return $this->hasMany(LeaveUser::class);
+    }
 }
