@@ -609,4 +609,116 @@ class UserController extends Controller
         }
     }
     
+    /**
+     * Update User
+     * @param Request $request, int  $id
+     * @return User
+     */
+    public function adminUpdateUser(Request $request, $id)
+    {
+        try {
+            $validateUser = Validator::make(
+                $request->all(),
+                [
+                    'firstName' => '',
+                    'lastName' => '',
+                    'phone' => '',
+                    'department_id' => '',
+                    'joined' => 'required',
+                    'hasManager' => '',
+                    'gmt' => 'required',
+                    'status' => 'required',
+                    'email' => 'required|email|unique:users,email,' . $id,
+                    'password' => ''
+                ]
+            );
+
+            if ($validateUser->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validateUser->errors()
+                ], 401);
+            }
+
+            $user = User::findOrFail($id);
+
+            $user->update([
+                'firstName' => $request->firstName,
+                'lastName' => $request->lastName,
+                'phone' => $request->phone,
+                'department_id' => $request->department_id,
+                'joined' => $request->joined,
+                'hasManager' => $request->hasManager,
+                'gmt' => $request->gmt,
+                'email' => $request->email,
+                'status' => 'required',
+                'password' => $request->password ? Hash::make($request->password) : $user->password
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User updated successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function adminPatchUser(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $user->update($request->only([
+                'firstName',
+                'lastName',
+                'phone',
+                'department_id',
+                'joined',
+                'hasManager',
+                'gmt',
+                'email',
+                'status',
+                'password'
+            ]));
+
+            if ($request->password) {
+                $user->password = Hash::make($request->password);
+                $user->save();
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User partially updated successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function adminDeleteUser($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $user->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User deleted successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
 }
