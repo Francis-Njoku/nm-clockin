@@ -94,6 +94,7 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/leave/manager/', [LeaveController::class, 'indexManage']);
     Route::get('/leaves/{leave}/', [LeaveController::class, 'show']);
     Route::put('/leaves/{leave}', [LeaveController::class, 'update']);
+    Route::put('/leave/approve/{leave}', [LeaveController::class, 'managerApproveLeave']);
     Route::delete('/leaves/{leave}', [LeaveController::class, 'destroy']);
     Route::post('/leaves/{leave}/comments', [LeaveController::class, 'storeLeaveComment']);
     Route::get('/auth/basic/user/details/', [UserController::class, 'listUserBasic']);
@@ -109,7 +110,14 @@ Route::group(['middleware' => ['auth.jwt','admin' ]], function () {
     Route::get('/admin/leave/all/', [LeaveController::class, 'index']);
     Route::get('/admin/user/{user}', [UserController::class, 'show']);
     Route::get('/auth/list-users/', [UserController::class, 'listUsers']);
+    // Update user completely (PUT)
+    Route::put('/admin/users/{id}', [UserController::class, 'adminUpdateUser']);
 
+    // Update user partially (PATCH)
+    Route::patch('/admin/users/{id}', [UserController::class, 'adminPatchUser']);
+
+    // Delete a user (DELETE)
+    Route::delete('/admin/users/{id}', [UserController::class, 'adminDeleteUser']);
 
 });
 
