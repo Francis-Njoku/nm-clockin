@@ -25,7 +25,7 @@ class UserBasicResource extends JsonResource
         //UserGroup::where('user_id', $this->id)->get();
 
         return [
-            //'id' => $this->id,
+            'id' => $this->id,
             'name' => $this->name,
             'firstName' => $this->firstName,
             'lastName' => $this->lastName,

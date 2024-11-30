@@ -36,7 +36,7 @@ class UserController extends Controller
     private function getID($name)
     {
         // Query the database to find the user by email
-        $user = User::where('name', $name)->first();
+        $user = User::where('id', $name)->first();
 
         // Check if the user exists
         if ($user) {
@@ -128,7 +128,8 @@ class UserController extends Controller
                     'hasManager' => '',
                     'gmt' => 'required',
                     'email' => 'required|email|unique:users,email',
-                    'password' => 'required'
+                    'password' => 'required',
+                    'manager_id' => 'nullable|integer',
                 ]
             );
 
@@ -534,7 +535,8 @@ class UserController extends Controller
                     'hasManager' => '',
                     'gmt' => 'required',
                     'email' => 'required|email|unique:users,email',
-                    'password' => 'required'
+                    'password' => 'required',
+                    'manager_id' => 'nullable|integer',
                 ]
             );
 
