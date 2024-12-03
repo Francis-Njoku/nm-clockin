@@ -94,7 +94,7 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/leave/manager/', [LeaveController::class, 'indexManage']);
     Route::get('/leaves/{leave}/', [LeaveController::class, 'show']);
     Route::put('/leaves/{leave}', [LeaveController::class, 'update']);
-    Route::put('/leave/approve/{leave}', [LeaveController::class, 'managerApproveLeave']);
+    Route::patch('/leave/approve/{leave}', [LeaveController::class, 'managerApproveLeave']);
     Route::delete('/leaves/{leave}', [LeaveController::class, 'destroy']);
     Route::post('/leaves/{leave}/comments', [LeaveController::class, 'storeLeaveComment']);
     Route::get('/auth/basic/user/details/', [UserController::class, 'listUserBasic']);

@@ -13,7 +13,7 @@ class UpdateLeaveRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,10 +21,10 @@ class UpdateLeaveRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            //
+            'status' => 'required|string|in:pending,approved,rejected',
         ];
     }
 }
