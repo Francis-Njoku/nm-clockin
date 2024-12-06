@@ -12,6 +12,7 @@ use App\Http\Resources\LeaveResource;
 use App\Http\Requests\StoreLeaveCommentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class LeaveController extends Controller
 {
@@ -198,6 +199,28 @@ class LeaveController extends Controller
             //\DB::table('leave_users')->insert('leaveUsers')
             LeaveUser::insert($leaveUsers);
         }
+
+        // Fetch the owner, recipients, and manager details
+        $owner = $leave->user; // Owner of the leave
+        $recipients = User::whereIn('id', $userIds)->get(); // Recipients
+        $manager = User::find($leave->manager_id); // Manager (if available)
+
+        // Send email notifications
+        // 1. Notify the owner
+        Mail::to($owner->email)->send(new LeaveNotification($leave, 'owner'));
+
+        // 2. Notify the recipients
+        foreach ($recipients as $recipient) {
+            Mail::to($recipient->email)->send(new LeaveNotification($leave, 'recipient'));
+        }
+
+        // 3. Notify the manager (if assigned)
+        if ($manager) {
+            Mail::to($manager->email)->send(new LeaveNotification($leave, 'manager'));
+        }
+
+
+
 
 
         return (new LeaveResource($leave))
