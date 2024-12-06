@@ -203,7 +203,7 @@ class LeaveController extends Controller
         // Fetch the owner, recipients, and manager details
         $owner = $leave->user; // Owner of the leave
         $recipients = User::whereIn('id', $userIds)->get(); // Recipients
-        $manager = User::find($leave->manager_id); // Manager (if available)
+        $manager = User::find($leave->user->manager_id); // Manager (if available)
 
         // Send email notifications
         // 1. Notify the owner
