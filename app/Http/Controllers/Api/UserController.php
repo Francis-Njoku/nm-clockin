@@ -47,8 +47,8 @@ class UserController extends Controller
             return response()->json(['message' => 'User not exist'], 404);
         }
     }
-    
-    
+
+
     /***
      * Generate Identity
      * @param No params
@@ -94,9 +94,9 @@ class UserController extends Controller
     }
     private function getTimeZone($getZome)
     {
-        $usertimezone="Africa/Lagos"; 
+        $usertimezone="Africa/Lagos";
 
-        date_default_timezone_set($usertimezone); 
+        date_default_timezone_set($usertimezone);
 
         //new date and time
         $ndate= new datetime();
@@ -247,7 +247,7 @@ class UserController extends Controller
         try {
             if (! $token = JWTAuth::attempt($credentials)) {
                 return response()->json(['error' => 'Unauthorized'], 401);
-                
+
             }
         } catch (JWTException $e) {
             return response()->json(['error' => 'Could not create token'], 500);
@@ -314,7 +314,7 @@ class UserController extends Controller
             return response()->json(['error' => 'Failed to logout, please try again.'], 500);
         }
     }
- 
+
     /**
      * @param ForgotPasswordRequest $request
      * @return JsonResponse
@@ -452,6 +452,8 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
 
+
+
     /**
      * @OA\Get(
      *     path="/api/auth/list-users",
@@ -490,7 +492,7 @@ class UserController extends Controller
         }*/
         return UserBasicResource::collection(User::paginate(10));
     }
-    
+
     /**
      * Display the specified resource.
      *
@@ -610,7 +612,7 @@ class UserController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Update User
      * @param Request $request, int  $id
