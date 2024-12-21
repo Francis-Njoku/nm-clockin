@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
-class CreateUsergroup extends Migration
+class CreateUsergroups extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,10 @@ class CreateUsergroup extends Migration
      */
     public function up()
     {
-        Schema::create('usergroup', function (Blueprint $table) {
+        Schema::create('user_groups', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(\App\Models\User::class, 'user_id');
-            $table->foreignIdFor(\App\Models\Group::class, 'group_id');
+            $table->foreignIdFor(\App\Models\UserGroup::class, 'group_id');
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ class CreateUsergroup extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('usergroup');
+        Schema::dropIfExists('user_groups');
     }
 }
