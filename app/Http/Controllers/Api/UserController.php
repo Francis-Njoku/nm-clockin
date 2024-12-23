@@ -2,28 +2,28 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ForgotPasswordRequest;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Events\PasswordReset;
+use Carbon\Carbon;
+use App\Models\UserGroup;
+use App\Models\User;
+use App\Mail\ResetPassword;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserBasicResource;
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\UserGroup;
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\JsonResource;
-use App\Mail\ResetPassword;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Controllers\Controller;
 use App\Enum\UserAuth;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -47,8 +47,8 @@ class UserController extends Controller
             return response()->json(['message' => 'User not exist'], 404);
         }
     }
-    
-    
+
+
     /***
      * Generate Identity
      * @param No params
@@ -59,13 +59,12 @@ class UserController extends Controller
         $randomNumber = random_int(10000000000000, 99999999999999);
         if (User::where('identity', '=', $randomNumber)->exists()) {
             return $this->generateIdentity();
-         }
-         else{
+        } else {
             return $randomNumber;
-         }
+        }
     }
 
-      /***
+    /***
      * Generate Identity
      * @param No params
      * @return unique Identity
@@ -75,16 +74,16 @@ class UserController extends Controller
         $randomNumber = random_int(100000, 999999);
         if (User::where('name', '=', $randomNumber)->exists()) {
             return $this->generateIdentity();
-         }
-         else{
+        } else {
             return $randomNumber;
-         }
+        }
     }
-    private function isValidTimezoneId($usertimezone) {
-        try{
+    private function isValidTimezoneId($usertimezone)
+    {
+        try {
             new \DateTimeZone($usertimezone);
             return true;
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Wrong Timezone, please try again'
@@ -94,17 +93,17 @@ class UserController extends Controller
     }
     private function getTimeZone($getZome)
     {
-        $usertimezone="Africa/Lagos"; 
+        $usertimezone = "Africa/Lagos";
 
-        date_default_timezone_set($usertimezone); 
+        date_default_timezone_set($usertimezone);
 
         //new date and time
-        $ndate= new datetime();
+        $ndate = new datetime();
         //split into date and time seperate
-        $nndate =$ndate->format("Y-m-d");
-        $nntime= $ndate->format("H:i:S");
+        $nndate = $ndate->format("Y-m-d");
+        $nntime = $ndate->format("H:i:S");
         //here you can test it
-        echo $nndate.'<br/>';
+        echo $nndate . '<br/>';
         echo $nntime;
 
     }
@@ -122,14 +121,12 @@ class UserController extends Controller
                 [
                     'firstName' => '',
                     'lastName' => '',
-                    'phone' => '',
-                    'department_id' => '',
-                    'joined' => 'required',
-                    'hasManager' => '',
-                    'gmt' => 'required',
                     'email' => 'required|email|unique:users,email',
                     'password' => 'required',
+                    'gmt' => 'required',
+                    'phone' => 'nullable',
                     'manager_id' => 'nullable|integer',
+                    'department_id' => 'nullable',
                 ]
             );
 
@@ -143,40 +140,34 @@ class UserController extends Controller
 
             $this->isValidTimezoneId($request->gmt);
 
-            if($request->manager_id)
-            {
+            if ($request->manager_id) {
                 $user = User::create([
+                    'identity' => $this->generateIdentity(),
                     'name' => $this->generateUser(),
                     'email' => $request->email,
+                    'password' => Hash::make($request->password),
                     'firstName' => $request->firstname,
                     'lastName' => $request->lastname,
                     'phone' => $request->phone,
                     'department_id' => $request->department_id,
-                    'identity' => $this->generateIdentity(),
-                    'isStaff' => 1,
-                    'gmt' => $request->gmt,
-                    'status' => 'approved',
-                    'hasManager' => $request->hasManager,
-                    'joined' => $request->joined,
                     'manager_id' => $this->getID($request->manager_id),
-                    'password' => Hash::make($request->password)
+                    'status' => 'approved',
+                    'gmt' => $request->gmt,
+                    'joined' => now()->format('Y-m-d'),
                 ]);
-            }
-            else{
+            } else {
                 $user = User::create([
+                    'identity' => $this->generateIdentity(),
                     'name' => $this->generateUser(),
                     'email' => $request->email,
+                    'password' => Hash::make($request->password),
                     'firstName' => $request->firstname,
                     'lastName' => $request->lastname,
                     'phone' => $request->phone,
-                    'identity' => $this->generateIdentity(),
-                    'isStaff' => 1,
-                    'gmt' => $request->gmt,
-                    'status' => 'approved',
                     'department_id' => $request->department_id,
-                    'hasManager' => $request->hasManager,
-                    'joined' => $request->joined,
-                    'password' => Hash::make($request->password)
+                    'status' => 'approved',
+                    'gmt' => $request->gmt,
+                    'joined' => now()->format('Y-m-d'),
                 ]);
             }
 
@@ -245,27 +236,27 @@ class UserController extends Controller
         $credentials = $request->only('email', 'password');
 
         try {
-            if (! $token = JWTAuth::attempt($credentials)) {
+            if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json(['error' => 'Unauthorized'], 401);
-                
+
             }
         } catch (JWTException $e) {
             return response()->json(['error' => 'Could not create token'], 500);
         }
 
-        $group = UserGroup::where('user_id', Auth::id())->get();
-
         $manager = User::where('manager_id', Auth::id())->exists();
 
-        foreach($group as $groups)
-        {
+        $group = UserGroup::where('user_id', Auth::id())->get();
+        foreach ($group as $groups) {
             $group_id = $groups->group_id;
         }
         return response()->json([
             'token' => $token,
             'refresh_token' => $this->createRefreshToken($token),
-            'group_id' => $group_id,
-            'isManager' => $manager
+            'isAdmin' => $group_id == 2 ? true : false,
+            'isManager' => $manager,
+            'hasManager' => Auth::user()->manager_id ? true : false,
+
         ]);
 
     }
@@ -314,7 +305,7 @@ class UserController extends Controller
             return response()->json(['error' => 'Failed to logout, please try again.'], 500);
         }
     }
- 
+
     /**
      * @param ForgotPasswordRequest $request
      * @return JsonResponse
@@ -341,7 +332,7 @@ class UserController extends Controller
                 $verify2->delete();
             }
 
-            $token =  random_int(100000, 999999);
+            $token          = random_int(100000, 999999);
             $password_reset = DB::table('password_resets')->insert([
                 'email' => $request->all()['email'],
                 'token' => $token,
@@ -452,6 +443,8 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
 
+
+
     /**
      * @OA\Get(
      *     path="/api/auth/list-users",
@@ -481,6 +474,7 @@ class UserController extends Controller
         return UserResource::collection(User::paginate(10));
     }
 
+
     public function listUserBasic(Request $request)
     {
         /*
@@ -490,12 +484,12 @@ class UserController extends Controller
         }*/
         return UserBasicResource::collection(User::paginate(10));
     }
-    
+
     /**
      * Display the specified resource.
      *
      * @param  \App\Models\Leave  $leave
-     * @return \Illuminate\Http\Response
+     * @return UserResource
      */
     public function show(User $user)
     {       // If the check passes, return the leave resource
@@ -506,21 +500,20 @@ class UserController extends Controller
      * Display the user profile.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return UserResource
      */
-
-     public function profile()
-     {
+    public function profile()
+    {
         //$query = User::where('id', Auth::id())->get();
         return new UserResource(User::where('id', Auth::user()->id)->first());
-     }
+    }
 
-     /**
+    /**
      * Create User
      * @param Request $request
      * @return User
      */
-    public function adminCreateUser()
+    public function adminCreateUser(Request $request)
     {
         try {
             //Validated
@@ -532,7 +525,6 @@ class UserController extends Controller
                     'phone' => '',
                     'department_id' => '',
                     'joined' => 'required',
-                    'hasManager' => '',
                     'gmt' => 'required',
                     'email' => 'required|email|unique:users,email',
                     'password' => 'required',
@@ -550,8 +542,7 @@ class UserController extends Controller
 
             $this->isValidTimezoneId($request->gmt);
 
-            if($request->manager_id)
-            {
+            if ($request->manager_id) {
                 $user = User::create([
                     'name' => $this->generateUser(),
                     'email' => $request->email,
@@ -560,16 +551,13 @@ class UserController extends Controller
                     'phone' => $request->phone,
                     'department_id' => $request->department_id,
                     'identity' => $this->generateIdentity(),
-                    'isStaff' => 1,
                     'gmt' => $request->gmt,
                     'status' => 'approved',
-                    'hasManager' => $request->hasManager,
                     'joined' => $request->joined,
                     'manager_id' => $this->getID($request->manager_id),
                     'password' => Hash::make($request->password)
                 ]);
-            }
-            else{
+            } else {
                 $user = User::create([
                     'name' => $this->generateUser(),
                     'email' => $request->email,
@@ -577,11 +565,9 @@ class UserController extends Controller
                     'lastName' => $request->lastname,
                     'phone' => $request->phone,
                     'identity' => $this->generateIdentity(),
-                    'isStaff' => 1,
                     'gmt' => $request->gmt,
                     'status' => 'approved',
                     'department_id' => $request->department_id,
-                    'hasManager' => $request->hasManager,
                     'joined' => $request->joined,
                     'password' => Hash::make($request->password)
                 ]);
@@ -610,7 +596,7 @@ class UserController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Update User
      * @param Request $request, int  $id
@@ -627,7 +613,6 @@ class UserController extends Controller
                     'phone' => '',
                     'department_id' => '',
                     'joined' => 'required',
-                    'hasManager' => '',
                     'gmt' => 'required',
                     'status' => 'required',
                     'email' => 'required|email|unique:users,email,' . $id,
@@ -651,7 +636,6 @@ class UserController extends Controller
                 'phone' => $request->phone,
                 'department_id' => $request->department_id,
                 'joined' => $request->joined,
-                'hasManager' => $request->hasManager,
                 'gmt' => $request->gmt,
                 'email' => $request->email,
                 'status' => 'required',
@@ -681,7 +665,6 @@ class UserController extends Controller
                 'phone',
                 'department_id',
                 'joined',
-                'hasManager',
                 'gmt',
                 'email',
                 'status',
