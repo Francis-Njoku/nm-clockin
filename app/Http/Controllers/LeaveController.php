@@ -137,7 +137,7 @@ class LeaveController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StoreLeaveRequest  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(StoreLeaveRequest $request)
     {
@@ -182,27 +182,25 @@ class LeaveController extends Controller
             //\DB::table('leave_users')->insert('leaveUsers')
             LeaveUser::insert($leaveUsers);
         }
-        /* 
-                // Fetch the owner, recipients, and manager details
-                $owner = $leave->user; // Owner of the leave
-                $recipients = User::whereIn('id', $userIds)->get(); // Recipients
-                $manager = User::find($leave->user->manager_id); // Manager (if available)
 
-                // Send email notifications
-                // 1. Notify the owner
-                Mail::to($owner->email)->send(new LeaveNotification($leave, 'owner'));
+        // Fetch the owner, recipients, and manager details
+        $owner      = $leave->user; // Owner of the leave
+        $recipients = User::whereIn('id', $userIds)->get(); // Recipients
+        $manager    = User::find($leave->user->manager_id); // Manager (if available)
 
-                // 2. Notify the recipients
-                foreach ($recipients as $recipient) {
-                    Mail::to($recipient->email)->send(new LeaveNotification($leave, 'recipient'));
-                }
+        // Send email notifications
+        // 1. Notify the owner
+        Mail::to($owner->email)->send(new LeaveNotification($leave, 'owner'));
 
-                // 3. Notify the manager (if assigned)
-                if ($manager) {
-                    Mail::to($manager->email)->send(new LeaveNotification($leave, 'manager'));
-                }
-         */
+        // 2. Notify the recipients
+        foreach ($recipients as $recipient) {
+            Mail::to($recipient->email)->send(new LeaveNotification($leave, 'recipient'));
+        }
 
+        // 3. Notify the manager (if assigned)
+        if ($manager) {
+            Mail::to($manager->email)->send(new LeaveNotification($leave, 'manager'));
+        }
 
         return (new LeaveResource($leave))
             ->additional(['message' => 'Leave request created successfully.'])
@@ -214,20 +212,25 @@ class LeaveController extends Controller
      * Display the specified resource.
      *
      * @param  \App\Models\Leave  $leave
-     * @return \Illuminate\Http\Response
+     * @return \App\Http\Resources\LeaveResource
      */
     public function show(Leave $leave)
     {
         // Get the authenticated user's ID
-        $userId = auth()->id();
+        $userId            = auth()->id();
+        $isUserTiedToLeave = LeaveUser::where('user_id', $userId)
+            ->where('leave_id', $leave->id)
+            ->exists();
+
 
         // Check if the leave belongs to the authenticated user
-        if ($leave->user_id !== $userId && $leave->user->manager_id !== $userId && $leave->manager->user_id !== $userId) {
+        if ($leave->user_id !== $userId && $leave->user->manager_id !== $userId && $isUserTiedToLeave === false) {
             return response()->json(['error' => 'Unauthorizess access.'], 403);
         }
 
         // If the check passes, return the leave resource
         return new LeaveResource($leave);
+        ;
     }
 
 
@@ -394,12 +397,12 @@ class LeaveController extends Controller
             ->where('leave_id', $leave->id)
             ->exists();
 
-        // Validate the user's association with the leave_id in the LeaveUser model
+        // Validate the user's association with the user_id in the Leave model
         $isUserLeaveOwner = Leave::where('user_id', $user->id)
             ->where('id', $leave->id)
             ->exists();
 
-        // Validate the user's association with the leave_id in the LeaveUser model
+        // Validate the user's association with the manager_id in the User model
         $isUserLeaveOwnerManager = User::where('id', $leave->user->id)
             ->where('manager_id', $user->id)
             ->exists();
