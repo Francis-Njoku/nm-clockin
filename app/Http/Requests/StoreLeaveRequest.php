@@ -31,7 +31,6 @@ class StoreLeaveRequest extends FormRequest
         return [
             'user_id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
-            'is_approved' => 'nullable|boolean',
             'approved_by' => 'nullable|exists:users,id',
             'start' => 'required|date|before_or_equal:end',
             'end' => 'required|date|after_or_equal:start',

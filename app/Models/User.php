@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -20,19 +20,17 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $fillable = [
         'name',
+        'identity',
         'email',
+        'password',
         'firstName',
         'lastName',
-        'isStaff',
-        'identity',
         'phone',
-        'password',
-        'hasManager', 
-        'joined',
-        'manager_id',
         'status',
+        'manager_id',
+        'department_id',
+        'joined',
         'gmt',
-        'department_id'
     ];
 
     public function getJWTIdentifier()

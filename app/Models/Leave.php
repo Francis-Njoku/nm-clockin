@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Leave extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'name', 'is_approved', 'approved_by', 'start', 'end', 'status', 'leave_type', 'reason', 'file_attachment'];
+    protected $fillable = ['user_id', 'name', 'approved_by', 'start', 'end', 'status', 'leave_type', 'reason', 'file_attachment'];
 
     /**
      * Relationship to get the user who requested the leave.
