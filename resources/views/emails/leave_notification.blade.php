@@ -11,9 +11,10 @@ A leave request has been created:
 - **End Date:** {{ $leave->end }}
 - **Reason:** {{ $leave->reason }}
 
-{{-- @component('mail::button', ['url' => url('/leaves/' . $leave->id)]) --}}
+{{-- @component('mail::button', ['url' => url('/leaves/' . $leave->id)])
 View Leave Details
 @endcomponent
+--}}
 
 Thank you,<br>
 {{ config('app.name') }}
