@@ -45,7 +45,7 @@ class LeaveController extends Controller
         }
 
         return LeaveResource::collection(
-            $statuses || $filter ? $query->paginate(10) : Leave::all()
+            $statuses || $filter ? $query->get() : Leave::all()
         );
     }
 
@@ -77,7 +77,7 @@ class LeaveController extends Controller
         }
 
         // Paginate the results
-        $results = $query->paginate(10);
+        $results = $query->get();
 
         // Return the paginated resource collection
         return LeaveResource::collection($results);
@@ -128,7 +128,7 @@ class LeaveController extends Controller
 
         // Return paginated results
         return LeaveResource::collection(
-            $query->paginate(10)
+            $query->get()
         );
     }
 
