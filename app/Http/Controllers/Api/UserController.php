@@ -797,9 +797,26 @@ class UserController extends Controller
                 'password' => $generatedPassword,
                 'name' => $user->firstName . ' ' . $user->lastName,
             ];
+
+            // 2. Notify the recipients
+            try {
+                Mail::to($user['email'])
+                    ->queue(new UserAccountNotification([
+                        'email' => $user['email'],
+                        'name' => $user['name'],
+                        'password' => $user['password']
+                    ], 'recipient'));
+
+                Log::info('Account credentials sent successfully', [
+                    'user_email' => $user['email']
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send account credentials', [
+                    'user_email' => $user['email'],
+                    'error' => $e->getMessage()
+                ]);
+            }
         }
-        // 2. Notify the recipients
-        $this->sendUserCredentials($createdUsers, $loginCredentials);
 
         return response()->json([
             'status' => true,
@@ -817,7 +834,7 @@ class UserController extends Controller
             'users.*.name' => 'required|string',
             'users.*.password' => 'required|string'
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -825,7 +842,7 @@ class UserController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-    
+
         foreach ($request->users as $user) {
             try {
                 Mail::to($user['email'])
@@ -834,7 +851,7 @@ class UserController extends Controller
                         'name' => $user['name'],
                         'password' => $user['password']
                     ], 'recipient'));
-    
+
                 Log::info('Account credentials sent successfully', [
                     'user_email' => $user['email']
                 ]);
@@ -845,7 +862,7 @@ class UserController extends Controller
                 ]);
             }
         }
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Notifications sent successfully'
