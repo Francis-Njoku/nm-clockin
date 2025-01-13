@@ -18,6 +18,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use Carbon\Carbon;
 use App\Models\UserGroup;
 use App\Models\User;
+use App\Mail\UserAccountNotification;
 use App\Mail\ResetPassword;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserBasicResource;
@@ -88,6 +89,8 @@ class UserController extends Controller
             return $randomNumber;
         }
     }
+
+
     private function isValidTimezoneId($usertimezone)
     {
         try {
@@ -101,6 +104,8 @@ class UserController extends Controller
         }
         return true;
     }
+
+
     private function getTimeZone($getZome)
     {
         $usertimezone = "Africa/Lagos";
@@ -117,6 +122,35 @@ class UserController extends Controller
         echo $nntime;
 
     }
+
+
+    private function createRefreshToken($token)
+    {
+        // Here you can store the refresh token in the database or another secure storage
+        // For simplicity, we'll return the same token as the refresh token
+        return $token;
+    }
+
+    private function sendUserCredentials(array $createdUsers, array $loginCredentials): void
+    {
+        foreach ($createdUsers as $key => $recipient) {
+            try {
+                Mail::to($recipient->email)
+                    ->queue(new UserAccountNotification($loginCredentials[$key], 'recipient'));
+
+                Log::info('Account credentials sent successfully', [
+                    'user_email' => $recipient->email
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send account credentials', [
+                    'user_email' => $recipient->email,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+    }
+
+
     /***
      * Create User
      * @param Request $request
@@ -286,12 +320,6 @@ class UserController extends Controller
         return response()->json(['token' => $newToken]);
     }
 
-    private function createRefreshToken($token)
-    {
-        // Here you can store the refresh token in the database or another secure storage
-        // For simplicity, we'll return the same token as the refresh token
-        return $token;
-    }
 
     /**
      * @return JsonResponse
@@ -758,7 +786,10 @@ class UserController extends Controller
                 'manager_id' => !empty($userData['manager_id']) ? $this->getID($userData['manager_id']) : null,
                 'password' => Hash::make($generatedPassword)
             ]);
-
+            UserGroup::create([
+                'user_id' => $user->id,
+                'group_id' => '1'
+            ]);
             $createdUsers[] = $user;
 
             $loginCredentials[] = [
@@ -767,12 +798,57 @@ class UserController extends Controller
                 'name' => $user->firstName . ' ' . $user->lastName,
             ];
         }
+        // 2. Notify the recipients
+        $this->sendUserCredentials($createdUsers, $loginCredentials);
 
         return response()->json([
             'status' => true,
             'message' => 'Users created successfully from CSV',
             'data' => $createdUsers,
             'login_credentials' => $loginCredentials
+        ], 201);
+    }
+
+    public function sendAccountNotifications(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'users' => 'required|array',
+            'users.*.email' => 'required|email',
+            'users.*.name' => 'required|string',
+            'users.*.password' => 'required|string'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+    
+        foreach ($request->users as $user) {
+            try {
+                Mail::to($user['email'])
+                    ->queue(new UserAccountNotification([
+                        'email' => $user['email'],
+                        'name' => $user['name'],
+                        'password' => $user['password']
+                    ], 'recipient'));
+    
+                Log::info('Account credentials sent successfully', [
+                    'user_email' => $user['email']
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send account credentials', [
+                    'user_email' => $user['email'],
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Notifications sent successfully'
         ], 201);
     }
 }

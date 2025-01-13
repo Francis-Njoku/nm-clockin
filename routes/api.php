@@ -115,6 +115,7 @@ Route::group(['middleware' => ['auth.jwt', 'admin']], function () {
     // Delete a user (DELETE)
     Route::delete('/admin/users/{id}', [UserController::class, 'adminDeleteUser']);
     Route::post('/admin/users/bulk-create', [UserController::class, 'bulkCreateUsers']);
+    Route::post('/admin/users/notifications', [UserController::class, 'sendAccountNotifications']);
 
 });
 
