@@ -288,8 +288,12 @@ class LeaveController extends Controller
         // Get the authenticated user's ID
         $userId = auth()->id();
 
-        // Check if the authenticated user is the owner of the leave
-        if ($leave->user->manager_id !== $userId && $leave->manager->user_id !== $userId) {
+        // Check if the authenticated user is the owner of the leave LeaveUser::whereIn('id', $userIds)
+        if (
+            $leave->user->manager_id !== $userId && !LeaveUser::where('user_id', $userId)
+                ->where('leave_id', $leave->id)
+                ->exists()
+        ) {
             return response()->json(['error' => 'Unauthorized access.'], 403);
         }
 

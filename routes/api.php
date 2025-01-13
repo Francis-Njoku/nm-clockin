@@ -62,7 +62,7 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::get('/auth/basic/user/details/', [UserController::class, 'listUserBasic']);
 
     //Route::post('/leave/apply/', [LeaveController::class, 'store'])->withoutMiddleware(['auth', 'csrf']);
-    Route::post('/leave/apply/',    [LeaveController::class, 'store']);
+    Route::post('/leave/apply/', [LeaveController::class, 'store']);
     Route::get('/leaves/{leave}/', [LeaveController::class, 'show']);
     Route::put('/leaves/{leave}', [LeaveController::class, 'update']);
     Route::get('/leave/user/', [LeaveController::class, 'indexSingle']);
@@ -114,6 +114,8 @@ Route::group(['middleware' => ['auth.jwt', 'admin']], function () {
     Route::patch('/admin/users/{id}', [UserController::class, 'adminPatchUser']);
     // Delete a user (DELETE)
     Route::delete('/admin/users/{id}', [UserController::class, 'adminDeleteUser']);
+    Route::post('/admin/users/bulk-create', [UserController::class, 'bulkCreateUsers']);
+
 });
 
 Route::group(['as' => 'admin', 'prefix' => 'admin', 'namespace' => 'admin', 'middleware' => ['auth:sanctum', 'admin']], function () {

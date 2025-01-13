@@ -64,6 +64,16 @@ class UserController extends Controller
         }
     }
 
+    private function generatePassword($length = 10)
+    {
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+        $password   = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $password;
+    }
+
     /***
      * Generate Identity
      * @param No params
@@ -705,5 +715,64 @@ class UserController extends Controller
                 'message' => $th->getMessage()
             ], 500);
         }
+    }
+    public function bulkCreateUsers(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'users' => 'required|file|mimes:csv,txt'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation error',
+                'errors' => $validator->errors()
+            ], 401);
+        }
+
+        $file    = $request->file('users');
+        $csvData = array_map('str_getcsv', file($file->getPathname()));
+        $headers = array_shift($csvData);
+
+        $createdUsers     = [];
+        $loginCredentials = [];
+
+        foreach ($csvData as $row) {
+            $userData = array_combine($headers, $row);
+
+            $this->isValidTimezoneId($userData['gmt']);
+            $generatedPassword = $this->generatePassword();
+
+            $user = User::create([
+                'name' => $this->generateUser(),
+                'email' => $userData['email'],
+                'firstName' => $userData['firstname'],
+                'lastName' => $userData['lastname'],
+                'phone' => $userData['phone'],
+                'department_id' => !empty($userData['department_id']) ? $this->getID($userData['department_id']) : null,
+                'identity' => $this->generateIdentity(),
+                'gmt' => $userData['gmt'],
+                'status' => 'approved',
+                'joined' => now()->format('Y-m-d'),
+                'manager_id' => !empty($userData['manager_id']) ? $this->getID($userData['manager_id']) : null,
+                'password' => Hash::make($generatedPassword)
+            ]);
+
+            $createdUsers[] = $user;
+
+            $loginCredentials[] = [
+                'email' => $userData['email'],
+                'password' => $generatedPassword,
+                'name' => $user->firstName . ' ' . $user->lastName,
+            ];
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Users created successfully from CSV',
+            'data' => $createdUsers,
+            'login_credentials' => $loginCredentials
+        ], 201);
     }
 }
