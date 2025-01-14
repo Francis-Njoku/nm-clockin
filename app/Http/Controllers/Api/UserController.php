@@ -466,6 +466,44 @@ class UserController extends Controller
         }
     }
 
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse(['success' => false, 'message' => $validator->errors()], 422);
+        }
+
+        $user = User::where('email', $request->email);
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        $token = $user->first()->createToken('myapptoken')->plainTextToken;
+
+        return new JsonResponse(
+            [
+                'success' => true,
+                'message' => "Your password has been reset",
+                'token' => $token
+            ],
+            200
+        );
+
+        /*
+        return new JsonResponse(
+            [
+                'success' => true,
+                'message' => "You can now reset your password"
+            ],
+            200
+        );*/
+
+    }
+
 
     /**
      * @param ForgotPasswordRequest $request
@@ -520,7 +558,7 @@ class UserController extends Controller
         if ($user->isAdmin == false) {
             return abort(403, 'Unauthorized action.');
         }*/
-        return UserBasicResource::collection(User::paginate(10));
+        return UserBasicResource::collection(User::get());
     }
 
     /**

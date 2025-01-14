@@ -60,6 +60,8 @@ Route::group(['middleware' => ['auth.jwt']], function () {
     Route::post('/auth/signout/', [UserController::class, 'signout']);
     Route::get('/auth/profile/', [UserController::class, 'profile']);
     Route::get('/auth/basic/user/details/', [UserController::class, 'listUserBasic']);
+    Route::post('/auth/change-password', [UserController::class, 'changePassword']);
+
 
     //Route::post('/leave/apply/', [LeaveController::class, 'store'])->withoutMiddleware(['auth', 'csrf']);
     Route::post('/leave/apply/', [LeaveController::class, 'store']);
